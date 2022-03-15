@@ -152,6 +152,15 @@ def main():
             game_over = True
             drawEndGameText(screen, "Stalemate")
 
+
+        if game_state.den_invaded:
+            game_over = True
+            if game_state.white_to_move:
+                drawEndGameText(screen, "Black wins by conquered the DEN")
+            else:
+                drawEndGameText(screen, "Red wins by conquered the DEN")
+
+
         clock.tick(MAX_FPS)
         p.display.flip()
 

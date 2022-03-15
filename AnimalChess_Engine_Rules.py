@@ -8,11 +8,10 @@ It will keep move log.
 class GameState:
     def __init__(self):
         """
-        Board is an 8x8 2d list, each element in list has 2 characters.
-        The first character represents the color of the piece: 'b' or 'w'.
-        The second character represents the type of the piece: 'R', 'N', 'B', 'Q', 'K' or 'p'.
+        Board is an 9x7 2d list, each element in list has 2 characters.
+        The first character represents the color of the piece: 'b' or 'r'.
+        The second character represents the type of the piece: 'M', 'L', 'T', 'E', 'O', 'D','T','L.
         "--" represents an empty space with no piece.
-        ''rT','rE','rC','rW', 'rO','rD','rM','rL'
         """
         self.board = [
             ["bL", "--", "--", "--", "--", "--", "bT"],
@@ -33,12 +32,13 @@ class GameState:
         self.white_king_location = (7, 4)
         self.black_king_location = (0, 4)
         self.checkmate = False
+        self.den_invaded = False
         self.stalemate = False
         self.in_check = False
         self.pins = []
         self.checks = []
-        self.enpassant_possible = ()  # coordinates for the square where en-passant capture is possible
-        self.enpassant_possible_log = [self.enpassant_possible]
+        # self.enpassant_possible = ()  # coordinates for the square where en-passant capture is possible
+        # self.enpassant_possible_log = [self.enpassant_possible]
 
 
     def makeMove(self, move):
@@ -49,11 +49,12 @@ class GameState:
         self.board[move.end_row][move.end_col] = move.piece_moved
         self.move_log.append(move)  # log the move so we can undo it later
         self.white_to_move = not self.white_to_move  # switch players
-        # update king's location if moved
-        if move.piece_moved == "wK":
-            self.white_king_location = (move.end_row, move.end_col)
-        elif move.piece_moved == "bK":
-            self.black_king_location = (move.end_row, move.end_col)
+
+        # # update king's location if moved
+        # if move.piece_moved == "wK":
+        #     self.white_king_location = (move.end_row, move.end_col)
+        # elif move.piece_moved == "bK":
+        #     self.black_king_location = (move.end_row, move.end_col)
 
 
     def undoMove(self):
@@ -65,11 +66,13 @@ class GameState:
             self.board[move.start_row][move.start_col] = move.piece_moved
             self.board[move.end_row][move.end_col] = move.piece_captured
             self.white_to_move = not self.white_to_move  # swap players
+
             # update the king's position if needed
-            if move.piece_moved == "wK":
-                self.white_king_location = (move.start_row, move.start_col)
-            elif move.piece_moved == "bK":
-                self.black_king_location = (move.start_row, move.start_col)
+            # if move.piece_moved == "wK":
+            #     self.white_king_location = (move.start_row, move.start_col)
+            # elif move.piece_moved == "bK":
+            #     self.black_king_location = (move.start_row, move.start_col)
+
             self.checkmate = False
             self.stalemate = False
 
@@ -131,6 +134,11 @@ class GameState:
             self.checkmate = False
             self.stalemate = False
 
+        if self.enemyConquerDen():
+            self.den_invaded=True
+        else:
+            self.den_invaded=False
+
         return moves
 
     def inCheck(self):  ###inTrapp inWater
@@ -141,6 +149,7 @@ class GameState:
             return self.squareUnderAttack(self.white_king_location[0], self.white_king_location[1])
         else:
             return self.squareUnderAttack(self.black_king_location[0], self.black_king_location[1])
+
     def inWater(self,row,col):
 
         check_water = self.board[row][col]
@@ -159,6 +168,12 @@ class GameState:
             if self.board[end_row][end_col++ (1 * jump_col)][1] not in ['M']:
                 return True
 
+        else:
+            return False
+
+    def enemyConquerDen(self):
+        if self.board[0][3][0] == "r" or self.board[8][3][0] == "b":
+            return True
         else:
             return False
 
@@ -313,6 +328,7 @@ class GameState:
                     elif end_piece == "--" and self.inWater(end_row,end_col):
                         jump_row = end_row - row  #Vertical jump
                         jump_col = end_col - col  #Horizontal jump
+
                         if jump_row != 0 and self.jumpConditions(end_row,end_col,jump_row,jump_col,enemy_color):
                             moves.append(Move((row, col), (end_row+(3*jump_row), end_col), self.board))
 
@@ -336,11 +352,13 @@ class Move:
     # in chess, fields on the board are described by two symbols, one of them being number between 1-8 (which is corresponding to rows)
     # and the second one being a letter between a-f (corresponding to columns), in order to use this notation we need to map our [row][col] coordinates
     # to match the ones used in the original chess game
-    ranks_to_rows = {"1": 7, "2": 6, "3": 5, "4": 4,
-                     "5": 3, "6": 2, "7": 1, "8": 0}
-    rows_to_ranks = {v: k for k, v in ranks_to_rows.items()}
+    ranks_to_rows = {"9":8, "8": 7, "7": 6, "6": 5, "5": 4,
+                     "4": 3, "3": 2, "2": 1, "1": 0}
+
     files_to_cols = {"a": 0, "b": 1, "c": 2, "d": 3,
                      "e": 4, "f": 5, "g": 6, "h": 7}
+
+    rows_to_ranks = {v: k for k, v in ranks_to_rows.items()}
     cols_to_files = {v: k for k, v in files_to_cols.items()}
 
     def __init__(self, start_square, end_square, board, is_enpassant_move=False, is_castle_move=False):
