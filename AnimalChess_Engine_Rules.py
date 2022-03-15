@@ -17,18 +17,17 @@ class GameState:
         self.board = [
             ["bL", "--", "--", "--", "--", "--", "bT"],
             ["--", "bD", "--", "--", "--", "bC", "--"],
-            ["bM", "--", "bO", "--", "bW", "--", "bE"],
+            ["bM", "--", "bO", "--", "bW", "bL", "bE"],
             ["--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--"],
-            ["rE", "--", "rW", "--", "rO", "--", "rM"],
+            ["rE", "rT", "rW", "--", "rO", "--", "rM"],
             ["--", "rC", "--", "--", "--", "rD", "--"],
             ["rT", "--", "--", "--", "--", "--", "rL"]]
-        self.moveFunctions = {"p": self.getRatMoves, "R": self.getRatMoves, "N": self.getRatMoves,
-                              "B": self.getRatMoves, "Q": self.getRatMoves, "K": self.getRatMoves,
-                              "E": self.getRatMoves, "T": self.getRatMoves, "C": self.getRatMoves,
-                              "W": self.getRatMoves, "O": self.getRatMoves, "D": self.getRatMoves,
-                              "M": self.getRatMoves, "L": self.getRatMoves}
+        self.moveFunctions = {"M": self.getRatMoves, "L": self.getJumpMoves,"T": self.getJumpMoves,
+                              "E": self.getNormalMoves, "O": self.getNormalMoves,"D": self.getNormalMoves,
+                              "W": self.getNormalMoves, "C": self.getNormalMoves}
+        self.animal_strengths = {"M": 1, "L": 7,"T": 6, "E": 8, "O": 5,"D": 3, "W": 4, "C": 2}
         self.white_to_move = True
         self.move_log = []
         self.white_king_location = (7, 4)
@@ -45,7 +44,6 @@ class GameState:
     def makeMove(self, move):
         """
         Takes a Move as a parameter and executes it.
-        (this will not work for castling, pawn promotion and en-passant)
         """
         self.board[move.start_row][move.start_col] = "--"
         self.board[move.end_row][move.end_col] = move.piece_moved
@@ -56,14 +54,6 @@ class GameState:
             self.white_king_location = (move.end_row, move.end_col)
         elif move.piece_moved == "bK":
             self.black_king_location = (move.end_row, move.end_col)
-
-        # pawn promotion
-        if move.is_pawn_promotion:
-            # if not is_AI:
-            #    promoted_piece = input("Promote to Q, R, B, or N:") #take this to UI later
-            #    self.board[move.end_row][move.end_col] = move.piece_moved[0] + promoted_piece
-            # else:
-            self.board[move.end_row][move.end_col] = move.piece_moved[0] + "Q"
 
 
     def undoMove(self):
@@ -143,7 +133,7 @@ class GameState:
 
         return moves
 
-    def inCheck(self):
+    def inCheck(self):  ###inTrapp inWater
         """
         Determine if a current player is in check
         """
@@ -151,6 +141,46 @@ class GameState:
             return self.squareUnderAttack(self.white_king_location[0], self.white_king_location[1])
         else:
             return self.squareUnderAttack(self.black_king_location[0], self.black_king_location[1])
+        
+        
+    def inWater(self,row,col):
+
+        check_water = self.board[row][col]
+        if row in [3, 4, 5]:
+            if col in [1, 2, 4, 5]:
+                return True
+        return False
+    
+    
+    def inEnemyTrap(self,row,col):
+        """
+        Checks if enemy piece is in player's trap
+        """
+        check_trap = self.board[row][col]
+        if self.white_to_move == True:
+            if row in [0, 1]:
+                if col in [2, 3, 4]:
+                    return True
+        elif self.white_to_move == False:
+            if row in [0, 1]:
+                if col in [2, 3, 4]:
+                    return True
+        return False
+    
+
+    def jumpConditions(self,end_row,end_col,jump_row,jump_col,enemy_color):
+
+        if jump_row != 0 and self.board[end_row + (3 * jump_row)][end_col][0] in ['-',enemy_color]:
+            if  self.board[end_row + (2 * jump_row)][end_col][1] not in ['M'] and self.board[end_row + (1 * jump_row)][end_col][1] not in ['M'] :
+                return True
+
+        elif jump_col != 0 and self.board[end_row][end_col + (2 * jump_col)][0] in ['-',enemy_color]:
+            if self.board[end_row][end_col++ (1 * jump_col)][1] not in ['M']:
+                return True
+
+        else:
+            return False
+
 
     def squareUnderAttack(self, row, col):
         """
@@ -164,6 +194,7 @@ class GameState:
                 return True
         return False
 
+
     def getAllPossibleMoves(self):
         """
         All moves without considering checks.
@@ -176,6 +207,7 @@ class GameState:
                     piece = self.board[row][col][1]
                     self.moveFunctions[piece](row, col, moves)  # calls appropriate move function based on piece type
         return moves
+
 
     def checkForPinsAndChecks(self):
         pins = []  # squares pinned and the direction its pinned from
@@ -243,18 +275,6 @@ class GameState:
 
 
     def getRatMoves(self, row, col, moves):
-        """
-        Get all the Rat moves for the Rat located at row, col and add the moves to the list.
-        """
-        piece_pinned = False
-        pin_direction = ()
-        for i in range(len(self.pins) - 1, -1, -1):
-            if self.pins[i][0] == row and self.pins[i][1] == col:
-                piece_pinned = True
-                pin_direction = (self.pins[i][2], self.pins[i][3])
-                if self.board[row][col][1] != "Q":  # can't remove queen from pin on Rat moves, only remove it on bishop moves
-                    self.pins.remove(self.pins[i])
-                break
 
         directions = ((-1, 0), (0, -1), (1, 0), (0, 1))  # up, left, down, right
         enemy_color = "b" if self.white_to_move else "r"
@@ -262,21 +282,79 @@ class GameState:
             for i in range(1, 2):
                 end_row = row + direction[0] * 1
                 end_col = col + direction[1] * 1
-                if 0 <= end_row <= 8 and 0 <= end_col <= 6:  # check for possible moves only in boundaries of the board ####### 6 9
-                    if not piece_pinned or pin_direction == direction or pin_direction == (-direction[0], -direction[1]):
-                        end_piece = self.board[end_row][end_col]
-                        if end_piece == "--":  # empty space is valid
-                            moves.append(Move((row, col), (end_row, end_col), self.board))
-                        elif end_piece[0] == enemy_color:  # capture enemy piece
-                            moves.append(Move((row, col), (end_row, end_col), self.board))
-                            break
-                        else:  # friendly piece
-                            break
+                if 0 <= end_row <= 8 and 0 <= end_col <= 6:  # check for possible moves only in boundaries of the board
+                    end_piece = self.board[end_row][end_col]
+                    if end_piece == "--" :  # empty space is valid
+                        moves.append(Move((row, col), (end_row, end_col), self.board))
+                    elif end_piece[0] == enemy_color and not self.inWater(row,col) and end_piece[1] == 'E':  # capture enemy piece, if the rat is not in the water
+                        moves.append(Move((row, col), (end_row, end_col), self.board))
+                        break
+                    elif end_piece[0] == enemy_color and end_piece[1] == 'M':  # capture Rat enemy, if the rat is not in the water
+                        moves.append(Move((row, col), (end_row, end_col), self.board))
+                        break
+                    else:  # friendly piece
+                        break
+                else:  # off board
+                    break
+
+    def getNormalMoves(self, row, col, moves):
+
+        directions = ((-1, 0), (0, -1), (1, 0), (0, 1))  # up, left, down, right
+        enemy_color = "b" if self.white_to_move else "r"
+        for direction in directions:
+            for i in range(1, 2):
+                end_row = row + direction[0] * 1
+                end_col = col + direction[1] * 1
+                if 0 <= end_row <= 8 and 0 <= end_col <= 6:  # check for possible moves only in boundaries of the board
+                    end_piece = self.board[end_row][end_col]
+                    if end_piece == "--" and not self.inWater(end_row,end_col):  # empty space is valid and Not in Water
+                        moves.append(Move((row, col), (end_row, end_col), self.board))
+                    elif end_piece[0] == enemy_color and not self.inWater(end_row,end_col):  # capture enemy piece
+                        moves.append(Move((row, col), (end_row, end_col), self.board))
+                        break
+                    else:  # friendly piece
+                        break
                 else:  # off board
                     break
 
 
+    def getJumpMoves(self, row, col, moves):
 
+        directions = ((-1, 0), (0, -1), (1, 0), (0, 1))  # up, left, down, right
+        enemy_color = "b" if self.white_to_move else "r"
+        for direction in directions:
+            for i in range(1, 2):
+                end_row = row + direction[0] * 1
+                end_col = col + direction[1] * 1
+                if 0 <= end_row <= 8 and 0 <= end_col <= 6:  # check for possible moves only in boundaries of the board
+                    end_piece = self.board[end_row][end_col]
+
+                    if end_piece == "--" and not self.inWater(end_row,end_col):  # empty space is valid and Not in Water
+                        moves.append(Move((row, col), (end_row, end_col), self.board))
+
+                    elif end_piece == "--" and self.inWater(end_row,end_col):
+                        jump_row = end_row - row  #Vertical jump
+                        jump_col = end_col - col  #Horizontal jump
+                        if jump_row != 0 and self.jumpConditions(end_row,end_col,jump_row,jump_col,enemy_color):
+                            moves.append(Move((row, col), (end_row+(3*jump_row), end_col), self.board))
+
+                        elif jump_col != 0 and self.jumpConditions(end_row,end_col,jump_row,jump_col,enemy_color):
+                            moves.append(Move((row, col), (end_row, end_col+(2*jump_col)), self.board))
+
+                    elif end_piece[0] == enemy_color and not self.inWater(end_row,end_col):  # capture enemy piece
+                        moves.append(Move((row, col), (end_row, end_col), self.board))
+                        break
+                    else:  # friendly piece
+                        break
+                else:  # off board
+                    break
+
+
+    def captureAction(self,row,col):
+        enemy_color = "b" if self.white_to_move else "r"
+        piece = self.board[row][col][1]
+        self.animal_strengths[piece]
+        pass           
 
 
 
