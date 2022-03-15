@@ -23,6 +23,7 @@ class GameState:
             ["rE", "rT", "rW", "--", "rO", "--", "rM"],
             ["--", "rC", "--", "--", "--", "rD", "--"],
             ["rT", "--", "--", "--", "--", "--", "rL"]]
+
         self.moveFunctions = {"M": self.getRatMoves, "L": self.getJumpMoves,"T": self.getJumpMoves,
                               "E": self.getNormalMoves, "O": self.getNormalMoves,"D": self.getNormalMoves,
                               "W": self.getNormalMoves, "C": self.getNormalMoves}
@@ -395,16 +396,7 @@ class Move:
         return False
 
     def getChessNotation(self):
-        # if self.is_pawn_promotion:
-        #     return self.getRankFile(self.end_row, self.end_col) + "Q"
-        # if self.is_castle_move:
-        #     if self.end_col == 1:
-        #         return "0-0-0"
-        #     else:
-        #         return "0-0"
-        # if self.is_enpassant_move:
-        #     return self.getRankFile(self.start_row, self.start_col)[0] + "x" + self.getRankFile(self.end_row,
-        #                                                                                         self.end_col) + " e.p."
+
         if self.piece_captured != "--":
             if self.piece_moved[1] == "p":
                 return self.getRankFile(self.start_row, self.start_col)[0] + "x" + self.getRankFile(self.end_row,

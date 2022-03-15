@@ -25,7 +25,6 @@ IMAGES = {}
 def loadImages():
     """
     Initialize a global directory of images.
-    This will be called exactly once in the main.
     """
     pieces = ['bT','bE','bC','bW','bO','bD','bM','bL','rT','rE','rC','rW','rO','rD','rM','rL']
     for piece in pieces:
