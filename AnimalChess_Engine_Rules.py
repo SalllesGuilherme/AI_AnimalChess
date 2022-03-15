@@ -84,7 +84,7 @@ class GameState:
         """
         # advanced algorithm
         moves = []
-        self.in_check, self.pins, self.checks = self.checkForPinsAndChecks()
+        #self.in_check, self.pins, self.checks = self.checkForPinsAndChecks()
 
         if self.white_to_move:
             king_row = self.white_king_location[0]
@@ -151,8 +151,6 @@ class GameState:
             return self.squareUnderAttack(self.black_king_location[0], self.black_king_location[1])
 
     def inWater(self,row,col):
-
-        check_water = self.board[row][col]
         if row in [3, 4, 5]:
             if col in [1, 2, 4, 5]:
                 return True
@@ -170,6 +168,14 @@ class GameState:
 
         else:
             return False
+
+    def moveNotOwnDen(self,rol_end,col_end,enemy_color):
+        if enemy_color == 'b' and rol_end == 8 and col_end == 3:
+            return False
+        elif enemy_color == 'r' and rol_end == 0 and col_end == 3:
+            return False
+        else:
+            return True
 
     def enemyConquerDen(self):
         if self.board[0][3][0] == "r" or self.board[8][3][0] == "b":
@@ -203,69 +209,69 @@ class GameState:
                     self.moveFunctions[piece](row, col, moves)  # calls appropriate move function based on piece type
         return moves
 
-    def checkForPinsAndChecks(self):
-        pins = []  # squares pinned and the direction its pinned from
-        checks = []  # squares where enemy is applying a check
-        in_check = False
-        if self.white_to_move:
-            enemy_color = "b"
-            ally_color = "w"
-            start_row = self.white_king_location[0]
-            start_col = self.white_king_location[1]
-        else:
-            enemy_color = "w"
-            ally_color = "b"
-            start_row = self.black_king_location[0]
-            start_col = self.black_king_location[1]
-        # check outwards from king for pins and checks, keep track of pins
-        directions = ((-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1))
-        for j in range(len(directions)):
-            direction = directions[j]
-            possible_pin = ()  # reset possible pins
-            for i in range(1, 7):                      #####################?? reduced to 7
-                end_row = start_row + direction[0] * i
-                end_col = start_col + direction[1] * i
-                if 0 <= end_row <= 6 and 0 <= end_col <= 6:  ################ 7 - >> 6
-                    end_piece = self.board[end_row][end_col]
-                    if end_piece[0] == ally_color and end_piece[1] != "K":
-                        if possible_pin == ():  # first allied piece could be pinned
-                            possible_pin = (end_row, end_col, direction[0], direction[1])
-                        else:  # 2nd allied piece - no check or pin from this direction
-                            break
-                    elif end_piece[0] == enemy_color:
-                        enemy_type = end_piece[1]
-                        # 5 possibilities in this complex conditional
-                        # 1.) orthogonally away from king and piece is a Rat
-                        # 2.) diagonally away from king and piece is a bishop
-                        # 3.) 1 square away diagonally from king and piece is a pawn
-                        # 4.) any direction and piece is a queen
-                        # 5.) any direction 1 square away and piece is a king
-                        if (0 <= j <= 3 and enemy_type == "R") or (4 <= j <= 7 and enemy_type == "B") or (
-                                i == 1 and enemy_type == "p" and (
-                                (enemy_color == "w" and 6 <= j <= 7) or (enemy_color == "b" and 4 <= j <= 5))) or (
-                                enemy_type == "Q") or (i == 1 and enemy_type == "K"):
-                            if possible_pin == ():  # no piece blocking, so check
-                                in_check = True
-                                checks.append((end_row, end_col, direction[0], direction[1]))
-                                break
-                            else:  # piece blocking so pin
-                                pins.append(possible_pin)
-                                break
-                        else:  # enemy piece not applying checks
-                            break
-                else:
-                    break  # off board
-        # check for knight checks
-        knight_moves = ((-2, -1), (-2, 1), (-1, 2), (1, 2), (2, -1), (2, 1), (-1, -2), (1, -2))
-        for move in knight_moves:
-            end_row = start_row + move[0]
-            end_col = start_col + move[1]
-            if 0 <= end_row <= 7 and 0 <= end_col <= 7:
-                end_piece = self.board[end_row][end_col]
-                if end_piece[0] == enemy_color and end_piece[1] == "N":  # enemy knight attacking a king
-                    in_check = True
-                    checks.append((end_row, end_col, move[0], move[1]))
-        return in_check, pins, checks
+    # def checkForPinsAndChecks(self):
+    #     pins = []  # squares pinned and the direction its pinned from
+    #     checks = []  # squares where enemy is applying a check
+    #     in_check = False
+    #     if self.white_to_move:
+    #         enemy_color = "b"
+    #         ally_color = "w"
+    #         start_row = self.white_king_location[0]
+    #         start_col = self.white_king_location[1]
+    #     else:
+    #         enemy_color = "w"
+    #         ally_color = "b"
+    #         start_row = self.black_king_location[0]
+    #         start_col = self.black_king_location[1]
+    #     # check outwards from king for pins and checks, keep track of pins
+    #     directions = ((-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1))
+    #     for j in range(len(directions)):
+    #         direction = directions[j]
+    #         possible_pin = ()  # reset possible pins
+    #         for i in range(1, 7):                      #####################?? reduced to 7
+    #             end_row = start_row + direction[0] * i
+    #             end_col = start_col + direction[1] * i
+    #             if 0 <= end_row <= 6 and 0 <= end_col <= 6:  ################ 7 - >> 6
+    #                 end_piece = self.board[end_row][end_col]
+    #                 if end_piece[0] == ally_color and end_piece[1] != "K":
+    #                     if possible_pin == ():  # first allied piece could be pinned
+    #                         possible_pin = (end_row, end_col, direction[0], direction[1])
+    #                     else:  # 2nd allied piece - no check or pin from this direction
+    #                         break
+    #                 elif end_piece[0] == enemy_color:
+    #                     enemy_type = end_piece[1]
+    #                     # 5 possibilities in this complex conditional
+    #                     # 1.) orthogonally away from king and piece is a Rat
+    #                     # 2.) diagonally away from king and piece is a bishop
+    #                     # 3.) 1 square away diagonally from king and piece is a pawn
+    #                     # 4.) any direction and piece is a queen
+    #                     # 5.) any direction 1 square away and piece is a king
+    #                     if (0 <= j <= 3 and enemy_type == "R") or (4 <= j <= 7 and enemy_type == "B") or (
+    #                             i == 1 and enemy_type == "p" and (
+    #                             (enemy_color == "w" and 6 <= j <= 7) or (enemy_color == "b" and 4 <= j <= 5))) or (
+    #                             enemy_type == "Q") or (i == 1 and enemy_type == "K"):
+    #                         if possible_pin == ():  # no piece blocking, so check
+    #                             in_check = True
+    #                             checks.append((end_row, end_col, direction[0], direction[1]))
+    #                             break
+    #                         else:  # piece blocking so pin
+    #                             pins.append(possible_pin)
+    #                             break
+    #                     else:  # enemy piece not applying checks
+    #                         break
+    #             else:
+    #                 break  # off board
+    #     # check for knight checks
+    #     knight_moves = ((-2, -1), (-2, 1), (-1, 2), (1, 2), (2, -1), (2, 1), (-1, -2), (1, -2))
+    #     for move in knight_moves:
+    #         end_row = start_row + move[0]
+    #         end_col = start_col + move[1]
+    #         if 0 <= end_row <= 7 and 0 <= end_col <= 7:
+    #             end_piece = self.board[end_row][end_col]
+    #             if end_piece[0] == enemy_color and end_piece[1] == "N":  # enemy knight attacking a king
+    #                 in_check = True
+    #                 checks.append((end_row, end_col, move[0], move[1]))
+    #     return in_check, pins, checks
 
 
     def getRatMoves(self, row, col, moves):
@@ -278,8 +284,9 @@ class GameState:
                 end_col = col + direction[1] * 1
                 if 0 <= end_row <= 8 and 0 <= end_col <= 6:  # check for possible moves only in boundaries of the board
                     end_piece = self.board[end_row][end_col]
-                    if end_piece == "--" :  # empty space is valid
+                    if end_piece == "--" and self.moveNotOwnDen(end_row,end_col,enemy_color):  # empty space is valid and not own DEN
                         moves.append(Move((row, col), (end_row, end_col), self.board))
+
                     elif end_piece[0] == enemy_color and not self.inWater(row,col) and end_piece[1] == 'E':  # capture enemy piece, if the rat is not in the water
                         moves.append(Move((row, col), (end_row, end_col), self.board))
                         break
@@ -301,7 +308,7 @@ class GameState:
                 end_col = col + direction[1] * 1
                 if 0 <= end_row <= 8 and 0 <= end_col <= 6:  # check for possible moves only in boundaries of the board
                     end_piece = self.board[end_row][end_col]
-                    if end_piece == "--" and not self.inWater(end_row,end_col):  # empty space is valid and Not in Water
+                    if end_piece == "--" and not self.inWater(end_row,end_col) and self.moveNotOwnDen(end_row,end_col,enemy_color):  # empty space is valid and Not in Water
                         moves.append(Move((row, col), (end_row, end_col), self.board))
                     elif end_piece[0] == enemy_color and not self.inWater(end_row,end_col):  # capture enemy piece
                         moves.append(Move((row, col), (end_row, end_col), self.board))
@@ -322,7 +329,7 @@ class GameState:
                 if 0 <= end_row <= 8 and 0 <= end_col <= 6:  # check for possible moves only in boundaries of the board
                     end_piece = self.board[end_row][end_col]
 
-                    if end_piece == "--" and not self.inWater(end_row,end_col):  # empty space is valid and Not in Water
+                    if end_piece == "--" and not self.inWater(end_row,end_col) and self.moveNotOwnDen(end_row,end_col,enemy_color):  # empty space is valid and Not in Water
                         moves.append(Move((row, col), (end_row, end_col), self.board))
 
                     elif end_piece == "--" and self.inWater(end_row,end_col):
@@ -342,9 +349,6 @@ class GameState:
                         break
                 else:  # off board
                     break
-
-
-
 
 
 
@@ -368,15 +372,16 @@ class Move:
         self.end_col = end_square[1]
         self.piece_moved = board[self.start_row][self.start_col]
         self.piece_captured = board[self.end_row][self.end_col]
-        # pawn promotion
-        self.is_pawn_promotion = (self.piece_moved == "wp" and self.end_row == 0) or (
-                self.piece_moved == "bp" and self.end_row == 7)
-        # en passant
-        self.is_enpassant_move = is_enpassant_move
-        if self.is_enpassant_move:
-            self.piece_captured = "wp" if self.piece_moved == "bp" else "bp"
-        # castle move
-        self.is_castle_move = is_castle_move
+
+        # # pawn promotion
+        # self.is_pawn_promotion = (self.piece_moved == "wp" and self.end_row == 0) or (
+        #         self.piece_moved == "bp" and self.end_row == 7)
+        # # en passant
+        # self.is_enpassant_move = is_enpassant_move
+        # if self.is_enpassant_move:
+        #     self.piece_captured = "wp" if self.piece_moved == "bp" else "bp"
+        # # castle move
+        # self.is_castle_move = is_castle_move
 
         self.is_capture = self.piece_captured != "--"
         self.moveID = self.start_row * 1000 + self.start_col * 100 + self.end_row * 10 + self.end_col
@@ -390,16 +395,16 @@ class Move:
         return False
 
     def getChessNotation(self):
-        if self.is_pawn_promotion:
-            return self.getRankFile(self.end_row, self.end_col) + "Q"
-        if self.is_castle_move:
-            if self.end_col == 1:
-                return "0-0-0"
-            else:
-                return "0-0"
-        if self.is_enpassant_move:
-            return self.getRankFile(self.start_row, self.start_col)[0] + "x" + self.getRankFile(self.end_row,
-                                                                                                self.end_col) + " e.p."
+        # if self.is_pawn_promotion:
+        #     return self.getRankFile(self.end_row, self.end_col) + "Q"
+        # if self.is_castle_move:
+        #     if self.end_col == 1:
+        #         return "0-0-0"
+        #     else:
+        #         return "0-0"
+        # if self.is_enpassant_move:
+        #     return self.getRankFile(self.start_row, self.start_col)[0] + "x" + self.getRankFile(self.end_row,
+        #                                                                                         self.end_col) + " e.p."
         if self.piece_captured != "--":
             if self.piece_moved[1] == "p":
                 return self.getRankFile(self.start_row, self.start_col)[0] + "x" + self.getRankFile(self.end_row,
@@ -417,8 +422,8 @@ class Move:
         return self.cols_to_files[col] + self.rows_to_ranks[row]
 
     def __str__(self):
-        if self.is_castle_move:
-            return "0-0" if self.end_col == 6 else "0-0-0"
+        # if self.is_castle_move:
+        #     return "0-0" if self.end_col == 6 else "0-0-0"
 
         end_square = self.getRankFile(self.end_row, self.end_col)
 

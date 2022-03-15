@@ -98,6 +98,7 @@ def main():
                         move_finder_process.terminate()
                         ai_thinking = False
                     move_undone = True
+
                 if e.key == p.K_r:  # reset the game when 'r' is pressed
                     game_state = AnimalChess_Engine_Rules.GameState()
                     valid_moves = game_state.getValidMoves()
@@ -141,18 +142,6 @@ def main():
         if not game_over:
             drawMoveLog(screen, game_state, move_log_font)
 
-        if game_state.checkmate:
-            game_over = True
-            if game_state.white_to_move:
-                drawEndGameText(screen, "Black wins by checkmate")
-            else:
-                drawEndGameText(screen, "White wins by checkmate")
-
-        elif game_state.stalemate:
-            game_over = True
-            drawEndGameText(screen, "Stalemate")
-
-
         if game_state.den_invaded:
             game_over = True
             if game_state.white_to_move:
@@ -160,6 +149,9 @@ def main():
             else:
                 drawEndGameText(screen, "Red wins by conquered the DEN")
 
+        elif game_state.stalemate:
+            game_over = True
+            drawEndGameText(screen, "Stalemate")
 
         clock.tick(MAX_FPS)
         p.display.flip()
@@ -183,21 +175,21 @@ def drawBoard(screen):
     colors = [p.Color("white"), p.Color("gray")]
     for row in range(DIMENSION_ROW):
         for column in range(DIMENSION_COL):
-            p.draw.rect(screen, p.Color("black"), p.Rect(column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-            p.draw.rect(screen, p.Color("gray"), p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3, SQUARE_SIZE - 3))
+            p.draw.rect(screen, p.Color(25,65,25), p.Rect(column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            p.draw.rect(screen, p.Color(200,225,200), p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3, SQUARE_SIZE - 3))
 
-            if row in [3,4,5]:
+            if row in [3,4,5]:  #WATER
                 if column in [1,2,4,5]:
-                    p.draw.rect(screen, p.Color("blue"),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
-            if row in [0,8]:
+                    p.draw.rect(screen, p.Color(5,120,230),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+            if row in [0,8]:    #TRAP
                 if column in [2,4]:
-                    p.draw.rect(screen, p.Color("red"),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
-            if row in [1,7]:
+                    p.draw.rect(screen, p.Color(255,105,60),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+            if row in [1,7]:   #TRAP
                 if column in [3]:
-                    p.draw.rect(screen, p.Color("red"),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
-            if row in [0,8]:
+                    p.draw.rect(screen, p.Color(255,105,60),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+            if row in [0,8]:   #DEN
                 if column in [3]:
-                    p.draw.rect(screen, p.Color("green"),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+                    p.draw.rect(screen, p.Color(50,180,50),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
 
 
 
@@ -290,16 +282,15 @@ def animateMove(move, screen, board, clock):
         row, col = (move.start_row + d_row * frame / frame_count, move.start_col + d_col * frame / frame_count)
         drawBoard(screen)
         drawPieces(screen, board)
+
         # erase the piece moved from its ending square
         color = colors[(move.end_row + move.end_col) % 2]
         end_square = p.Rect(move.end_col * SQUARE_SIZE, move.end_row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
         p.draw.rect(screen, color, end_square)
         # draw captured piece onto rectangle
         if move.piece_captured != '--':
-            if move.is_enpassant_move:
-                enpassant_row = move.end_row + 1 if move.piece_captured[0] == 'b' else move.end_row - 1
-                end_square = p.Rect(move.end_col * SQUARE_SIZE, enpassant_row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
             screen.blit(IMAGES[move.piece_captured], end_square)
+
         # draw moving piece
         screen.blit(IMAGES[move.piece_moved], p.Rect(col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
         p.display.flip()
