@@ -53,8 +53,8 @@ def main():
     move_undone = False
     move_finder_process = None
     move_log_font = p.font.SysFont("Arial", 14, False, False)
-    player_one = True  # if a human is playing white, then this will be True, else False
-    player_two = True  # if a human is playing black, then this will be True, else False
+    player_one = False  # if a human is playing white, then this will be True, else False
+    player_two = False  # if a human is playing black, then this will be True, else False
 
     while running:
         human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two)
@@ -113,20 +113,25 @@ def main():
 
         # AI move finder
         if not game_over and not human_turn and not move_undone:
-            if not ai_thinking:
-                ai_thinking = True
-                return_queue = Queue()  # used to pass data between threads
-                move_finder_process = Process(target=AnimalChess_AI.findBestMove, args=(game_state, valid_moves, return_queue))
-                move_finder_process.start()
+            #if not ai_thinking:
+            #    ai_thinking = True
+            #    ai_move=[]
+                #return_queue = Queue()  # used to pass data between threads
+                #move_finder_process = Process(target=AnimalChess_AI.findBestMove, args=(game_state, valid_moves, return_queue))
+                #move_finder_process.start()
 
-            if not move_finder_process.is_alive():
-                ai_move = return_queue.get()
-                if ai_move is None:
-                    ai_move = AnimalChess_AI.findRandomMove(valid_moves)
+        #if not move_finder_process.is_alive():
+            #ai_move = return_queue.get()
+            #if ai_move is None:
+            ai_move = AnimalChess_AI.findBestMove(game_state , valid_moves)
+            #    print(ai_move)
+            if ai_move is not None:
                 game_state.makeMove(ai_move)
                 move_made = True
                 animate = True
-                ai_thinking = False
+            else:
+                game_state.den_invaded=True
+            #ai_thinking = False
 
         if move_made:
             if animate:
@@ -144,9 +149,9 @@ def main():
         if game_state.den_invaded:
             game_over = True
             if game_state.white_to_move:
-                drawEndGameText(screen, "Black wins by conquered the DEN")
+                drawEndGameText(screen, "Black wins")
             else:
-                drawEndGameText(screen, "Red wins by conquered the DEN")
+                drawEndGameText(screen, "Red wins")
 
         elif game_state.stalemate:
             game_over = True
