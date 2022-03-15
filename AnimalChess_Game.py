@@ -204,8 +204,7 @@ def highlightSquares(screen, game_state, valid_moves, square_selected):
         screen.blit(s, (last_move.end_col * SQUARE_SIZE, last_move.end_row * SQUARE_SIZE))
     if square_selected != ():
         row, col = square_selected
-        if game_state.board[row][col][0] == (
-                'r' if game_state.white_to_move else 'b'):  # square_selected is a piece that can be moved
+        if game_state.board[row][col][0] == ('r' if game_state.white_to_move else 'b'):  # square_selected is a piece that can be moved
             # highlight selected square
             s = p.Surface((SQUARE_SIZE, SQUARE_SIZE))
             s.set_alpha(100)  # transparency value 0 -> transparent, 255 -> opaque
