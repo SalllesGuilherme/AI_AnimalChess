@@ -156,7 +156,6 @@ class GameState:
         return moves
 
 
-
     def canAttack(self, own_row, own_col, row_end, col_end):
         """
         Determines if player can attack opponent's piece

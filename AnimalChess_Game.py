@@ -31,9 +31,6 @@ IMAGES = {}
 
 
 def loadImages():
-    """
-    Initialize a global directory of images.
-    """
     pieces = ['bT','bE','bC','bW','bO','bD','bM','bL','rT','rE','rC','rW','rO','rD','rM','rL','trap','den','grass','water']
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQUARE_SIZE, SQUARE_SIZE))

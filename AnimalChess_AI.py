@@ -6,6 +6,7 @@ Professor: Luis Reis
 Students: Danilo Brandão / Guilherme Salles
 """
 
+
 """
 Library for generate the AI moves
 """
