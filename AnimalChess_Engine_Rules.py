@@ -1,9 +1,15 @@
 """
-Storing all the information about the current state of chess game.
-Determining valid moves at current state.
-It will keep move log.
+FEUP - Faculty of Engineering of Porto
+MASTER OF DATA SCIENCE AND ENGINEERING
+Course: Artificial Inteligence
+Professor: Luis Reis
+Students: Danilo Brandão / Guilherme Salles
 """
 
+"""
+Storing all the information about the current state of chess game.
+Determining valid moves at current state.
+"""
 
 class GameState:
     def __init__(self):
@@ -38,42 +44,23 @@ class GameState:
         self.in_check = False
         self.pins = []
         self.checks = []
-        # self.enpassant_possible = ()  # coordinates for the square where en-passant capture is possible
-        # self.enpassant_possible_log = [self.enpassant_possible]
 
 
     def makeMove(self, move):
-        """
-        Takes a Move as a parameter and executes it.
-        """
+
         self.board[move.start_row][move.start_col] = "--"
         self.board[move.end_row][move.end_col] = move.piece_moved
         self.move_log.append(move)  # log the move so we can undo it later
         self.white_to_move = not self.white_to_move  # switch players
 
-        # # update king's location if moved
-        # if move.piece_moved == "wK":
-        #     self.white_king_location = (move.end_row, move.end_col)
-        # elif move.piece_moved == "bK":
-        #     self.black_king_location = (move.end_row, move.end_col)
-
 
     def undoMove(self):
-        """
-        Undo the last move
-        """
+
         if len(self.move_log) != 0:  # make sure that there is a move to undo
             move = self.move_log.pop()
             self.board[move.start_row][move.start_col] = move.piece_moved
             self.board[move.end_row][move.end_col] = move.piece_captured
             self.white_to_move = not self.white_to_move  # swap players
-
-            # update the king's position if needed
-            # if move.piece_moved == "wK":
-            #     self.white_king_location = (move.start_row, move.start_col)
-            # elif move.piece_moved == "bK":
-            #     self.black_king_location = (move.start_row, move.start_col)
-
             self.checkmate = False
             self.stalemate = False
 
@@ -81,47 +68,10 @@ class GameState:
 
     def getValidMoves(self):
         """
-        All moves considering checks.
+        All valid moves.
         """
-        # advanced algorithm
         moves = []
-        #self.in_check, self.pins, self.checks = self.checkForPinsAndChecks()
 
-        # if self.white_to_move:
-        #     king_row = self.white_king_location[0]
-        #     king_col = self.white_king_location[1]
-        # else:
-        #     king_row = self.black_king_location[0]
-        #     king_col = self.black_king_location[1]
-        # if self.in_check:
-        #     if len(self.checks) == 1:  # only 1 check, block the check or move the king
-        #         moves = self.getAllPossibleMoves()
-        #         # to block the check you must put a piece into one of the squares between the enemy piece and your king
-        #         check = self.checks[0]  # check information
-        #         check_row = check[0]
-        #         check_col = check[1]
-        #         piece_checking = self.board[check_row][check_col]
-        #         valid_squares = []  # squares that pieces can move to
-        #         # if knight, must capture the knight or move your king, other pieces can be blocked
-        #         if piece_checking[1] == "N":
-        #             valid_squares = [(check_row, check_col)]
-        #         else:
-        #             for i in range(1, 8):
-        #                 valid_square = (king_row + check[2] * i,
-        #                                 king_col + check[3] * i)  # check[2] and check[3] are the check directions
-        #                 valid_squares.append(valid_square)
-        #                 if valid_square[0] == check_row and valid_square[
-        #                     1] == check_col:  # once you get to piece and check
-        #                     break
-        #         # get rid of any moves that don't block check or move king
-        #         for i in range(len(moves) - 1, -1, -1):  # iterate through the list backwards when removing elements
-        #             if moves[i].piece_moved[1] != "K":  # move doesn't move king so it must block or capture
-        #                 if not (moves[i].end_row,
-        #                         moves[i].end_col) in valid_squares:  # move doesn't block or capture piece
-        #                     moves.remove(moves[i])
-        #     else:  # double check, king has to move
-        #         self.getKingMoves(king_row, king_col, moves)
-        # else:  # not in check - all moves are fine
         moves = self.getAllPossibleMoves()
 
         if len(moves) == 0:
@@ -143,14 +93,6 @@ class GameState:
 
         return moves
 
-    def inCheck(self):  ###inTrapp inWater
-        """
-        Determine if a current player is in check
-        """
-        if self.white_to_move:
-            return self.squareUnderAttack(self.white_king_location[0], self.white_king_location[1])
-        else:
-            return self.squareUnderAttack(self.black_king_location[0], self.black_king_location[1])
 
     def inWater(self,row,col):
         if row in [3, 4, 5]:
@@ -198,22 +140,8 @@ class GameState:
             return False
 
 
-    def squareUnderAttack(self, row, col):
-        """
-        Determine if enemy can attack the square row col
-        """
-        self.white_to_move = not self.white_to_move  # switch to opponent's point of view
-        opponents_moves = self.getAllPossibleMoves()
-        self.white_to_move = not self.white_to_move
-        for move in opponents_moves:
-            if move.end_row == row and move.end_col == col:  # square is under attack
-                return True
-        return False
-
     def getAllPossibleMoves(self):
-        """
-        All moves without considering checks.
-        """
+
         moves = []
         for row in range(len(self.board)):
             for col in range(len(self.board[row])):
@@ -361,11 +289,6 @@ class Move:
 
         end_square = self.getRankFile(self.end_row, self.end_col)
 
-        if self.piece_moved[1] == "p":
-            if self.is_capture:
-                return self.cols_to_files[self.start_col] + "x" + end_square
-            else:
-                return end_square + "Q" if self.is_pawn_promotion else end_square
 
         move_string = self.piece_moved[1]
         if self.is_capture:

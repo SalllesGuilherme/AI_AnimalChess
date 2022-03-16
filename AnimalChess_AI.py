@@ -1,6 +1,15 @@
 """
-Handling the AI moves.
+FEUP - Faculty of Engineering of Porto
+MASTER OF DATA SCIENCE AND ENGINEERING
+Course: Artificial Inteligence
+Professor: Luis Reis
+Students: Danilo Brandão / Guilherme Salles
 """
+
+"""
+Library for generate the AI moves
+"""
+
 import random
 
 piece_score = {"E": 20, "M": 10, "L": 8, "T": 6, "O": 3, "W": 3,"D": 1,"C": 1}
@@ -9,7 +18,6 @@ DEN_CONQUESTED=1000
 DRAW=0
 
 def findRandomMove(valid_moves):
-    #return random.choice(valid_moves)
     return valid_moves[random.randint(0,len(valid_moves)-1)]
 
 

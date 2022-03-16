@@ -1,8 +1,16 @@
 """
-Main driver file.
-Handling user input.
-Displaying current GameStatus object.
+FEUP - Faculty of Engineering of Porto
+MASTER OF DATA SCIENCE AND ENGINEERING
+Course: Artificial Inteligence
+Professor: Luis Reis
+Students: Danilo Brandão / Guilherme Salles
 """
+
+"""
+JUNGLE CHESS
+Main code for run the game, it handle user input and GUI
+"""
+
 import pygame as p
 import AnimalChess_Engine_Rules,AnimalChess_AI
 import sys
@@ -23,19 +31,14 @@ IMAGES = {}
 
 
 def loadImages():
-    """
-    Initialize a global directory of images.
-    """
+
     pieces = ['bT','bE','bC','bW','bO','bD','bM','bL','rT','rE','rC','rW','rO','rD','rM','rL']
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQUARE_SIZE, SQUARE_SIZE))
 
 
 def main():
-    """
-    The main driver for our code.
-    This will handle user input and updating the graphics.
-    """
+
     p.init()
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     clock = p.time.Clock()
@@ -53,7 +56,7 @@ def main():
     move_undone = False
     move_finder_process = None
     move_log_font = p.font.SysFont("Arial", 14, False, False)
-    player_one = False  # if a human is playing white, then this will be True, else False
+    player_one = True  # if a human is playing white, then this will be True, else False
     player_two = False  # if a human is playing black, then this will be True, else False
 
     while running:
@@ -162,19 +165,14 @@ def main():
 
 
 def drawGameState(screen, game_state, valid_moves, square_selected):
-    """
-    Responsible for all the graphics within current game state.
-    """
+
     drawBoard(screen)  # draw squares on the board
     highlightSquares(screen, game_state, valid_moves, square_selected)
     drawPieces(screen, game_state.board)  # draw pieces on top of those squares
 
 
 def drawBoard(screen):
-    """
-    Draw the squares on the board.
-    The top left square is always light.
-    """
+
     global colors
     colors = [p.Color("white"), p.Color("gray")]
     for row in range(DIMENSION_ROW):
@@ -223,9 +221,7 @@ def highlightSquares(screen, game_state, valid_moves, square_selected):
 
 
 def drawPieces(screen, board):
-    """
-    Draw the pieces on the board using the current game_state.board
-    """
+
     for row in range(DIMENSION_ROW):
         for column in range(DIMENSION_COL):
             piece = board[row][column]
@@ -234,9 +230,7 @@ def drawPieces(screen, board):
 
 
 def drawMoveLog(screen, game_state, font):
-    """
-    Draws the move log.
-    """
+
     move_log_rect = p.Rect(BOARD_WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT)
     p.draw.rect(screen, p.Color('black'), move_log_rect)
     move_log = game_state.move_log
@@ -274,9 +268,7 @@ def drawEndGameText(screen, text):
 
 
 def animateMove(move, screen, board, clock):
-    """
-    Animating a move
-    """
+
     global colors
     d_row = move.end_row - move.start_row
     d_col = move.end_col - move.start_col
