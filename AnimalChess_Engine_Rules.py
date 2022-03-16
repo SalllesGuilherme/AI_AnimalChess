@@ -29,9 +29,11 @@ class GameState:
             ["rE", "rT", "rW", "--", "rO", "--", "rM"],
             ["--", "rC", "--", "--", "--", "rD", "--"],
             ["rT", "--", "--", "--", "--", "--", "rL"]]
+
         self.moveFunctions = {"M": self.getRatMoves, "L": self.getJumpMoves,"T": self.getJumpMoves,
                               "E": self.getNormalMoves, "O": self.getNormalMoves,"D": self.getNormalMoves,
                               "W": self.getNormalMoves, "C": self.getNormalMoves}
+
         self.animal_strengths = {"M": 1, "L": 7, "T": 6, "E": 8, "O": 5,"D": 3, "W": 4, "C": 2}
         self.white_to_move = True
         self.move_log = []
@@ -154,6 +156,51 @@ class GameState:
         return moves
 
 
+
+    def canAttack(self, own_row, own_col, row_end, col_end):
+        """
+        Determines if player can attack opponent's piece
+
+        Args:
+            own_row (int): Player's piece row
+            own_col (int): Player's piece column
+            row_end (int): Opponent's piece row
+            col_end (int): Opponent's piece column
+
+        Returns:
+            boolean: Returns 'True' if it's possible to attack the opponent's piece or 'False' if it's an invalid move.
+        """
+        own_piece = self.board[own_row][own_col]
+        target_piece = self.board[row_end][col_end]
+        # Traps attacks and protection
+        if target_piece[0] == 'r' and (row_end,col_end) in self.red_trap_locations:  # red player protected by own traps
+            return False
+        if target_piece[0] == 'b' and (row_end,col_end) in self.black_trap_locations:  # black player protected by own traps
+            return False
+        if target_piece[0] == 'b' and (row_end,col_end) in self.red_trap_locations:  # black player vulnerable by enemy traps
+            return True
+        if target_piece[0] == 'r' and (row_end,col_end) in self.black_trap_locations:  # red player vulnerable by enemy traps
+            return True
+        # Elephant cannot attack rat
+        if own_piece[1] == 'E' and target_piece[1] == 'M':
+            return False
+        # Rat attacks
+        if own_piece[1] == 'M':
+            if self.inWater(own_row, own_col) and self.inWater(row_end, col_end):  # Rat can attack another rat in the water
+                return True
+            elif self.inWater(own_row, own_col) and not self.inWater(row_end, col_end):  # Rat cannot attack from inside the water
+                return False
+            elif not self.inWater(own_row, own_col) and self.inWater(row_end, col_end):  # Rat cannot attack target inside the water from land
+                return False
+            elif target_piece[1] == 'E':  # Regular rat attack against elephant
+                return True
+            elif self.animal_strengths[target_piece[1]] <= self.animal_strengths[own_piece[1]]:
+                return True
+        # Regular animal battle
+        elif self.animal_strengths[target_piece[1]] <= self.animal_strengths[own_piece[1]]:
+            return True
+
+
     def getRatMoves(self, row, col, moves):
 
         directions = ((-1, 0), (0, -1), (1, 0), (0, 1))  # up, left, down, right
@@ -226,7 +273,6 @@ class GameState:
                         break
                 else:  # off board
                     break
-
 
 
 class Move:

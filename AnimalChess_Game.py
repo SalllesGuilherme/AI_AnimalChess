@@ -39,7 +39,7 @@ def loadImages():
         IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQUARE_SIZE, SQUARE_SIZE))
 
 
-def main():
+def main(player1,player2):
 
     p.init()
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
@@ -58,8 +58,8 @@ def main():
     move_undone = False
     move_finder_process = None
     move_log_font = p.font.SysFont("Arial", 14, False, False)
-    player_one = True  # if a human is playing white, then this will be True, else False
-    player_two = False  # if a human is playing black, then this will be True, else False
+    player_one = player1   # True for Human, False for AI
+    player_two = player2  # True for Human, False for AI
 
     while running:
         human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two)
@@ -357,4 +357,5 @@ Please type one of the numbers below for choose a mode for play:
     return p1,p2
 
 if __name__ == "__main__":
-    main()
+    player1,player2 = start_page()
+    main(player1,player2)
