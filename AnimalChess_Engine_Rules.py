@@ -237,8 +237,8 @@ class Move:
     # in chess, fields on the board are described by two symbols, one of them being number between 1-8 (which is corresponding to rows)
     # and the second one being a letter between a-f (corresponding to columns), in order to use this notation we need to map our [row][col] coordinates
     # to match the ones used in the original chess game
-    ranks_to_rows = {"9":8, "8": 7, "7": 6, "6": 5, "5": 4,
-                     "4": 3, "3": 2, "2": 1, "1": 0}
+    ranks_to_rows = {"1":8, "2": 7, "3": 6, "4": 5, "5": 4,
+                     "6": 3, "7": 2, "8": 1, "9": 0}
 
     files_to_cols = {"a": 0, "b": 1, "c": 2, "d": 3,
                      "e": 4, "f": 5, "g": 6, "h": 7}

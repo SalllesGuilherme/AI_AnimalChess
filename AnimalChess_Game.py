@@ -20,7 +20,7 @@ WIDTH = 512 #448
 HEIGHT = 512 #572
 BOARD_WIDTH = 448
 BOARD_HEIGHT = 576
-MOVE_LOG_PANEL_WIDTH = 0
+MOVE_LOG_PANEL_WIDTH = 250
 MOVE_LOG_PANEL_HEIGHT = BOARD_HEIGHT
 DIMENSION = 8
 DIMENSION_ROW = 9
@@ -100,6 +100,11 @@ def main():
                         move_finder_process.terminate()
                         ai_thinking = False
                     move_undone = True
+
+                if e.key == p.K_h:
+                    print("Time for Hint \nAI recomends this move:")
+                    ai_move = AnimalChess_AI.findBestMove(game_state, valid_moves)
+                    print(ai_move)
 
                 if e.key == p.K_r:  # reset the game when 'r' is pressed
                     game_state = AnimalChess_Engine_Rules.GameState()
@@ -292,6 +297,58 @@ def animateMove(move, screen, board, clock):
         p.display.flip()
         clock.tick(60)
 
+def start_page():
+
+    junglechess ='''
+
+
+    
+WELCOME TO
+
+   ___                   _      _____ _                   
+  |_  |                 | |    /  __ \ |                  
+    | |_   _ _ __   __ _| | ___| /  \/ |__   ___  ___ ___ 
+    | | | | | '_ \ / _` | |/ _ \ |   | '_ \ / _ \/ __/ __|
+/\__/ / |_| | | | | (_| | |  __/ \__/\ | | |  __/\__ \__ |
+\____/ \__,_|_| |_|\__, |_|\___|\____/_| |_|\___||___/___/
+                    __/ |                                 
+                   |___/    
+                                            
+################################################################                   
+
+Please type one of the numbers below for choose a mode for play:
+   ( 1 ) - Human vs Human
+   ( 2 ) - Human vs AI
+   ( 3 ) - AI vs Human
+   ( 4 ) - AI vs AI
+   
+################################################################    
+'''
+    print(junglechess)
+    not_select=True
+    p1 , p2 = False, False
+    messagevalue = "If cann't type a number between 1-4, you have no change against our AI"
+
+    while not_select:
+        try:
+            mode=int(input())
+            if mode in [1,2,3,4]:
+                if mode == 1:
+                    p1, p2 = True, True
+                elif mode == 2:
+                    p1,p2 = True,False
+                elif mode == 3:
+                    p1,p2 = False,True
+                elif mode == 4:
+                    p1,p2 = False,False
+                not_select=False
+            else:
+                print(messagevalue)
+        except ValueError:
+            print(messagevalue)
+
+    return p1,p2
 
 if __name__ == "__main__":
+    start_page()
     main()
