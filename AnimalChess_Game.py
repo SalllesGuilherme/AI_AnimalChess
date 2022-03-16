@@ -1,8 +1,16 @@
 """
-Main driver file.
-Handling user input.
-Displaying current GameStatus object.
+FEUP - Faculty of Engineering of Porto
+MASTER OF DATA SCIENCE AND ENGINEERING
+Course: Artificial Inteligence
+Professor: Luis Reis
+Students: Danilo Brandão / Guilherme Salles
 """
+
+"""
+JUNGLE CHESS
+Main code for run the game, it handle user input and GUI
+"""
+
 import pygame as p
 import AnimalChess_Engine_Rules,AnimalChess_AI
 import sys
@@ -31,11 +39,8 @@ def loadImages():
         IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQUARE_SIZE, SQUARE_SIZE))
 
 
-def main():
-    """
-    The main driver for our code.
-    This will handle user input and updating the graphics.
-    """
+def main(player1,player2):
+
     p.init()
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     clock = p.time.Clock()
@@ -53,8 +58,8 @@ def main():
     move_undone = False
     move_finder_process = None
     move_log_font = p.font.SysFont("Arial", 14, False, False)
-    player_one = True  # if a human is playing white, then this will be True, else False
-    player_two = True  # if a human is playing black, then this will be True, else False
+    player_one = player1   # True for Human, False for AI
+    player_two = player2  # True for Human, False for AI
 
     while running:
         human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two)
@@ -98,6 +103,11 @@ def main():
                         ai_thinking = False
                     move_undone = True
 
+                if e.key == p.K_h:
+                    print("Time for Hint \nAI recomends this move:")
+                    ai_move = AnimalChess_AI.findBestMove(game_state, valid_moves)
+                    print(ai_move)
+
                 if e.key == p.K_r:  # reset the game when 'r' is pressed
                     game_state = AnimalChess_Engine_Rules.GameState()
                     valid_moves = game_state.getValidMoves()
@@ -113,20 +123,25 @@ def main():
 
         # AI move finder
         if not game_over and not human_turn and not move_undone:
-            if not ai_thinking:
-                ai_thinking = True
-                return_queue = Queue()  # used to pass data between threads
-                move_finder_process = Process(target=AnimalChess_AI.findBestMove, args=(game_state, valid_moves, return_queue))
-                move_finder_process.start()
+            #if not ai_thinking:
+            #    ai_thinking = True
+            #    ai_move=[]
+                #return_queue = Queue()  # used to pass data between threads
+                #move_finder_process = Process(target=AnimalChess_AI.findBestMove, args=(game_state, valid_moves, return_queue))
+                #move_finder_process.start()
 
-            if not move_finder_process.is_alive():
-                ai_move = return_queue.get()
-                if ai_move is None:
-                    ai_move = AnimalChess_AI.findRandomMove(valid_moves)
+        #if not move_finder_process.is_alive():
+            #ai_move = return_queue.get()
+            #if ai_move is None:
+            ai_move = AnimalChess_AI.findBestMove(game_state , valid_moves)
+            #    print(ai_move)
+            if ai_move is not None:
                 game_state.makeMove(ai_move)
                 move_made = True
                 animate = True
-                ai_thinking = False
+            else:
+                game_state.den_invaded=True
+            #ai_thinking = False
 
         if move_made:
             if animate:
@@ -144,9 +159,9 @@ def main():
         if game_state.den_invaded:
             game_over = True
             if game_state.white_to_move:
-                drawEndGameText(screen, "Black wins by conquered the DEN")
+                drawEndGameText(screen, "Black wins")
             else:
-                drawEndGameText(screen, "Red wins by conquered the DEN")
+                drawEndGameText(screen, "Red wins")
 
         elif game_state.stalemate:
             game_over = True
@@ -157,19 +172,14 @@ def main():
 
 
 def drawGameState(screen, game_state, valid_moves, square_selected):
-    """
-    Responsible for all the graphics within current game state.
-    """
+
     drawBoard(screen)  # draw squares on the board
     highlightSquares(screen, game_state, valid_moves, square_selected)
     drawPieces(screen, game_state.board)  # draw pieces on top of those squares
 
 
 def drawBoard(screen):
-    """
-    Draw the squares on the board.
-    The top left square is always light.
-    """
+
     global colors
     colors = [p.Color("white"), p.Color("gray")]
     for row in range(DIMENSION_ROW):
@@ -223,9 +233,7 @@ def highlightSquares(screen, game_state, valid_moves, square_selected):
 
 
 def drawPieces(screen, board):
-    """
-    Draw the pieces on the board using the current game_state.board
-    """
+
     for row in range(DIMENSION_ROW):
         for column in range(DIMENSION_COL):
             piece = board[row][column]
@@ -234,9 +242,7 @@ def drawPieces(screen, board):
 
 
 def drawMoveLog(screen, game_state, font):
-    """
-    Draws the move log.
-    """
+
     move_log_rect = p.Rect(BOARD_WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT)
     p.draw.rect(screen, p.Color('black'), move_log_rect)
     move_log = game_state.move_log
@@ -274,9 +280,7 @@ def drawEndGameText(screen, text):
 
 
 def animateMove(move, screen, board, clock):
-    """
-    Animating a move
-    """
+
     global colors
     d_row = move.end_row - move.start_row
     d_col = move.end_col - move.start_col
@@ -300,6 +304,58 @@ def animateMove(move, screen, board, clock):
         p.display.flip()
         clock.tick(60)
 
+def start_page():
+
+    junglechess ='''
+
+
+    
+WELCOME TO
+
+   ___                   _      _____ _                   
+  |_  |                 | |    /  __ \ |                  
+    | |_   _ _ __   __ _| | ___| /  \/ |__   ___  ___ ___ 
+    | | | | | '_ \ / _` | |/ _ \ |   | '_ \ / _ \/ __/ __|
+/\__/ / |_| | | | | (_| | |  __/ \__/\ | | |  __/\__ \__ |
+\____/ \__,_|_| |_|\__, |_|\___|\____/_| |_|\___||___/___/
+                    __/ |                                 
+                   |___/    
+                                            
+################################################################                   
+
+Please type one of the numbers below for choose a mode for play:
+   ( 1 ) - Human vs Human
+   ( 2 ) - Human vs AI
+   ( 3 ) - AI vs Human
+   ( 4 ) - AI vs AI
+   
+################################################################    
+'''
+    print(junglechess)
+    not_select=True
+    p1 , p2 = False, False
+    messagevalue = "If cann't type a number between 1-4, you have no change against our AI"
+
+    while not_select:
+        try:
+            mode=int(input())
+            if mode in [1,2,3,4]:
+                if mode == 1:
+                    p1, p2 = True, True
+                elif mode == 2:
+                    p1,p2 = True,False
+                elif mode == 3:
+                    p1,p2 = False,True
+                elif mode == 4:
+                    p1,p2 = False,False
+                not_select=False
+            else:
+                print(messagevalue)
+        except ValueError:
+            print(messagevalue)
+
+    return p1,p2
 
 if __name__ == "__main__":
-    main()
+    player1,player2 = start_page()
+    main(player1,player2)
