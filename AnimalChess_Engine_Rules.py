@@ -26,11 +26,13 @@ class GameState:
         self.moveFunctions = {"M": self.getRatMoves, "L": self.getJumpMoves,"T": self.getJumpMoves,
                               "E": self.getNormalMoves, "O": self.getNormalMoves,"D": self.getNormalMoves,
                               "W": self.getNormalMoves, "C": self.getNormalMoves}
-        self.animal_strengths = {"M": 1, "L": 7,"T": 6, "E": 8, "O": 5,"D": 3, "W": 4, "C": 2}
+        self.animal_strengths = {"M": 1, "L": 7, "T": 6, "E": 8, "O": 5,"D": 3, "W": 4, "C": 2}
         self.white_to_move = True
         self.move_log = []
         self.white_king_location = (7, 4)
         self.black_king_location = (0, 4)
+        self.red_trap_locations = [(7,3), (8,2), (8, 4)]
+        self.black_trap_locations = [(1,3), (0,2), (0, 4)]
         self.checkmate = False
         self.den_invaded = False
         self.stalemate = False
@@ -150,45 +152,6 @@ class GameState:
         else:
             return self.squareUnderAttack(self.black_king_location[0], self.black_king_location[1])
         
-        
-    def inWater(self,row,col):
-
-        check_water = self.board[row][col]
-        if row in [3, 4, 5]:
-            if col in [1, 2, 4, 5]:
-                return True
-        return False
-    
-    
-    def inEnemyTrap(self,row,col):
-        """
-        Checks if enemy piece is in player's trap
-        """
-        check_trap = self.board[row][col]
-        if self.white_to_move == True:
-            if row in [0, 1]:
-                if col in [2, 3, 4]:
-                    return True
-        elif self.white_to_move == False:
-            if row in [0, 1]:
-                if col in [2, 3, 4]:
-                    return True
-        return False
-    
-
-    def jumpConditions(self,end_row,end_col,jump_row,jump_col,enemy_color):
-
-        if jump_row != 0 and self.board[end_row + (3 * jump_row)][end_col][0] in ['-',enemy_color]:
-            if  self.board[end_row + (2 * jump_row)][end_col][1] not in ['M'] and self.board[end_row + (1 * jump_row)][end_col][1] not in ['M'] :
-                return True
-
-        elif jump_col != 0 and self.board[end_row][end_col + (2 * jump_col)][0] in ['-',enemy_color]:
-            if self.board[end_row][end_col++ (1 * jump_col)][1] not in ['M']:
-                return True
-
-        else:
-            return False
-
 
     def inWater(self,row,col):
         if row in [3, 4, 5]:
@@ -209,10 +172,10 @@ class GameState:
         else:
             return False
 
-    def moveNotOwnDen(self,rol_end,col_end,enemy_color):
-        if enemy_color == 'b' and rol_end == 8 and col_end == 3:
+    def moveNotOwnDen(self,row_end,col_end,enemy_color):
+        if enemy_color == 'b' and row_end == 8 and col_end == 3:
             return False
-        elif enemy_color == 'r' and rol_end == 0 and col_end == 3:
+        elif enemy_color == 'r' and row_end == 0 and col_end == 3:
             return False
         else:
             return True
@@ -222,7 +185,7 @@ class GameState:
             return True
         else:
             return False
-
+      
 
     def squareUnderAttack(self, row, col):
         """
@@ -314,7 +277,51 @@ class GameState:
     #                 checks.append((end_row, end_col, move[0], move[1]))
     #     return in_check, pins, checks
 
+           
+    def canAttack(self, own_row, own_col, row_end, col_end):
+        """
+        Determines if player can attack opponent's piece
 
+        Args:
+            own_row (int): Player's piece row
+            own_col (int): Player's piece column
+            row_end (int): Opponent's piece row
+            col_end (int): Opponent's piece column
+
+        Returns:
+            boolean: Returns 'True' if it's possible to attack the opponent's piece or 'False' if it's an invalid move.
+        """
+        own_piece = self.board[own_row][own_col]
+        target_piece = self.board[row_end][col_end]
+        # Traps attacks and protection
+        if target_piece[0] == 'r' and (row_end,col_end) in self.red_trap_locations:  # red player protected by own traps
+            return False
+        if target_piece[0] == 'b' and (row_end,col_end) in self.black_trap_locations:  # black player protected by own traps
+            return False
+        if target_piece[0] == 'b' and (row_end,col_end) in self.red_trap_locations:  # black player vulnerable by enemy traps
+            return True
+        if target_piece[0] == 'r' and (row_end,col_end) in self.black_trap_locations:  # red player vulnerable by enemy traps
+            return True
+        # Elephant cannot attack rat
+        if own_piece[1] == 'E' and target_piece[1] == 'M':
+            return False
+        # Rat attacks
+        if own_piece[1] == 'M':
+            if self.inWater(own_row, own_col) and self.inWater(row_end, col_end):  # Rat can attack another rat in the water
+                return True
+            elif self.inWater(own_row, own_col) and not self.inWater(row_end, col_end):  # Rat cannot attack from inside the water 
+                return False
+            elif not self.inWater(own_row, own_col) and self.inWater(row_end, col_end):  # Rat cannot attack target inside the water from land 
+                return False
+            elif target_piece[1] == 'E':  # Regular rat attack against elephant
+                return True
+            elif self.animal_strengths[target_piece[1]] <= self.animal_strengths[own_piece[1]]:
+                return True
+        # Regular animal battle
+        elif self.animal_strengths[target_piece[1]] <= self.animal_strengths[own_piece[1]]:
+            return True
+
+            
     def getRatMoves(self, row, col, moves):
 
         directions = ((-1, 0), (0, -1), (1, 0), (0, 1))  # up, left, down, right
@@ -327,13 +334,8 @@ class GameState:
                     end_piece = self.board[end_row][end_col]
                     if end_piece == "--" and self.moveNotOwnDen(end_row,end_col,enemy_color):  # empty space is valid and not own DEN
                         moves.append(Move((row, col), (end_row, end_col), self.board))
-
-                    elif end_piece[0] == enemy_color and not self.inWater(row,col) and end_piece[1] == 'E':  # capture enemy piece, if the rat is not in the water
+                    elif end_piece[0] == enemy_color and self.canAttack(row, col, end_row, end_col):  # capture enemy piece, if the enemy is weaker or trapped
                         moves.append(Move((row, col), (end_row, end_col), self.board))
-                        break
-                    elif end_piece[0] == enemy_color and end_piece[1] == 'M':  # capture Rat enemy, if the rat is not in the water
-                        moves.append(Move((row, col), (end_row, end_col), self.board))
-                        break
                     else:  # friendly piece
                         break
                 else:  # off board
@@ -350,8 +352,8 @@ class GameState:
                 if 0 <= end_row <= 8 and 0 <= end_col <= 6:  # check for possible moves only in boundaries of the board
                     end_piece = self.board[end_row][end_col]
                     if end_piece == "--" and not self.inWater(end_row,end_col) and self.moveNotOwnDen(end_row,end_col,enemy_color):  # empty space is valid and Not in Water
-                        moves.append(Move((row, col), (end_row, end_col), self.board))
-                    elif end_piece[0] == enemy_color and not self.inWater(end_row,end_col):  # capture enemy piece
+                        moves.append(Move((row, col), (end_row, end_col), self.board)) 
+                    elif end_piece[0] == enemy_color and self.canAttack(row, col, end_row, end_col):  # capture enemy piece, if the enemy is weaker or trapped
                         moves.append(Move((row, col), (end_row, end_col), self.board))
                         break
                     else:  # friendly piece
@@ -382,21 +384,13 @@ class GameState:
                         elif jump_col != 0 and self.jumpConditions(end_row,end_col,jump_row,jump_col,enemy_color):
                             moves.append(Move((row, col), (end_row, end_col+(2*jump_col)), self.board))
 
-                    elif end_piece[0] == enemy_color and not self.inWater(end_row,end_col):  # capture enemy piece
+                    elif end_piece[0] == enemy_color and not self.inWater(end_row,end_col) and self.canAttack(row, col, end_row, end_col):  # capture enemy piece
                         moves.append(Move((row, col), (end_row, end_col), self.board))
                         break
                     else:  # friendly piece
                         break
                 else:  # off board
                     break
-
-
-    def captureAction(self,row,col):
-        enemy_color = "b" if self.white_to_move else "r"
-        piece = self.board[row][col][1]
-        self.animal_strengths[piece]
-        pass           
-
 
 
 class Move:

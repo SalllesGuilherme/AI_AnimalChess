@@ -26,7 +26,7 @@ def loadImages():
     """
     Initialize a global directory of images.
     """
-    pieces = ['bT','bE','bC','bW','bO','bD','bM','bL','rT','rE','rC','rW','rO','rD','rM','rL']
+    pieces = ['bT','bE','bC','bW','bO','bD','bM','bL','rT','rE','rC','rW','rO','rD','rM','rL','trap','den','grass','water']
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQUARE_SIZE, SQUARE_SIZE))
 
@@ -175,20 +175,25 @@ def drawBoard(screen):
     for row in range(DIMENSION_ROW):
         for column in range(DIMENSION_COL):
             p.draw.rect(screen, p.Color(25,65,25), p.Rect(column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            #screen.blit(IMAGES['grass'], p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE -3, SQUARE_SIZE - 3))  # grass image
             p.draw.rect(screen, p.Color(200,225,200), p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3, SQUARE_SIZE - 3))
 
             if row in [3,4,5]:  #WATER
                 if column in [1,2,4,5]:
                     p.draw.rect(screen, p.Color(5,120,230),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+                    #screen.blit(IMAGES['water'], p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE -3, SQUARE_SIZE - 3))
             if row in [0,8]:    #TRAP
                 if column in [2,4]:
-                    p.draw.rect(screen, p.Color(255,105,60),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+                    #p.draw.rect(screen, p.Color(255,105,60),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+                    screen.blit(IMAGES['trap'], p.Rect(column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
             if row in [1,7]:   #TRAP
                 if column in [3]:
-                    p.draw.rect(screen, p.Color(255,105,60),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+                    #p.draw.rect(screen, p.Color(255,105,60),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+                    screen.blit(IMAGES['trap'], p.Rect(column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
             if row in [0,8]:   #DEN
                 if column in [3]:
-                    p.draw.rect(screen, p.Color(50,180,50),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+                    #p.draw.rect(screen, p.Color(50,180,50),p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3,SQUARE_SIZE - 3))
+                    screen.blit(IMAGES['den'], p.Rect(column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
 
 
