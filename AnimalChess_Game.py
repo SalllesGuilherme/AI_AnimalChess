@@ -20,7 +20,7 @@ WIDTH = 512 #448
 HEIGHT = 512 #572
 BOARD_WIDTH = 448
 BOARD_HEIGHT = 576
-MOVE_LOG_PANEL_WIDTH = 250
+MOVE_LOG_PANEL_WIDTH = 0 #250
 MOVE_LOG_PANEL_HEIGHT = BOARD_HEIGHT
 DIMENSION = 8
 DIMENSION_ROW = 9
@@ -351,4 +351,5 @@ Please type one of the numbers below for choose a mode for play:
 
 if __name__ == "__main__":
     start_page()
+    print('Press ( h ) for a Hint')
     main()
