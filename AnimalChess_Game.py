@@ -130,8 +130,8 @@ def main(player1,player2):
         #if not move_finder_process.is_alive():
             #ai_move = return_queue.get()
             #if ai_move is None:
-            ai_move = AnimalChess_AI.findBestMove(game_state , valid_moves)
-            #    print(ai_move)
+            ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state , valid_moves)
+            print(ai_move)
             if ai_move is not None:
                 game_state.makeMove(ai_move)
                 move_made = True

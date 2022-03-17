@@ -22,11 +22,11 @@ class GameState:
         self.board = [
             ["bL", "--", "--", "--", "--", "--", "bT"],
             ["--", "bD", "--", "--", "--", "bC", "--"],
-            ["bM", "--", "bO", "--", "bW", "bL", "bE"],
+            ["bM", "--", "bO", "--", "bW", "--", "bE"],
             ["--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--"],
-            ["rE", "rT", "rW", "--", "rO", "--", "rM"],
+            ["rE", "--", "rW", "--", "rO", "--", "rM"],
             ["--", "rC", "--", "--", "--", "rD", "--"],
             ["rT", "--", "--", "--", "--", "--", "rL"]]
 
@@ -103,15 +103,21 @@ class GameState:
                 return True
         return False
 
-    def jumpConditions(self,end_row,end_col,jump_row,jump_col,enemy_color):
+    def jumpConditions(self,row,col,end_row,end_col,jump_row,jump_col,enemy_color):
 
         if jump_row != 0 and self.board[end_row + (3 * jump_row)][end_col][0] in ['-',enemy_color]:
-            if  self.board[end_row + (2 * jump_row)][end_col][1] not in ['M'] and self.board[end_row + (1 * jump_row)][end_col][1] not in ['M'] :
-                return True
+            if  self.board[end_row + (2 * jump_row)][end_col][1] not in ['M'] and self.board[end_row + (1 * jump_row)][end_col][1] not in ['M']: #No Mouse on the way
+                if self.board[end_row + (3 * jump_row)][end_col][0] in ['-']: #Available space
+                    return True
+                elif self.canAttack(row,col,end_row + (3 * jump_row) ,end_col): #Enemy check on end square jump
+                    return True
 
         elif jump_col != 0 and self.board[end_row][end_col + (2 * jump_col)][0] in ['-',enemy_color]:
-            if self.board[end_row][end_col++ (1 * jump_col)][1] not in ['M']:
-                return True
+            if self.board[end_row][end_col++ (1 * jump_col)][1] not in ['M']:    #No Mouse on the way
+                if self.board[end_row][end_col + (2 * jump_col)][0] in ['-']:    #Available space
+                    return True
+                elif self.canAttack(row, col, end_row , end_col+ (2 * jump_col)): #Enemy check on end square jump
+                    return True
 
         else:
             return False
@@ -129,19 +135,6 @@ class GameState:
             return True
         else:
             return False
-
-#delete
-    def squareUnderAttack(self, row, col):
-        """
-        Determine if enemy can attack the square row col
-        """
-        self.white_to_move = not self.white_to_move  # switch to opponent's point of view
-        opponents_moves = self.getAllPossibleMoves()
-        self.white_to_move = not self.white_to_move
-        for move in opponents_moves:
-            if move.end_row == row and move.end_col == col:  # square is under attack
-                return True
-        return False
 
 
     def getAllPossibleMoves(self):
@@ -259,10 +252,10 @@ class GameState:
                         jump_row = end_row - row  #Vertical jump
                         jump_col = end_col - col  #Horizontal jump
 
-                        if jump_row != 0 and self.jumpConditions(end_row,end_col,jump_row,jump_col,enemy_color):
+                        if jump_row != 0 and self.jumpConditions(row,col,end_row,end_col,jump_row,jump_col,enemy_color):
                             moves.append(Move((row, col), (end_row+(3*jump_row), end_col), self.board))
 
-                        elif jump_col != 0 and self.jumpConditions(end_row,end_col,jump_row,jump_col,enemy_color):
+                        elif jump_col != 0 and self.jumpConditions(row,col,end_row,end_col,jump_row,jump_col,enemy_color):
                             moves.append(Move((row, col), (end_row, end_col+(2*jump_col)), self.board))
 
                     elif end_piece[0] == enemy_color and not self.inWater(end_row,end_col) and self.canAttack(row, col, end_row, end_col):  # capture enemy piece
