@@ -34,7 +34,7 @@ class GameState:
                               "E": self.getNormalMoves, "O": self.getNormalMoves,"D": self.getNormalMoves,
                               "W": self.getNormalMoves, "C": self.getNormalMoves}
 
-        self.animal_strengths = {"M": 1, "L": 7, "T": 6, "E": 8, "O": 5,"D": 3, "W": 4, "C": 2}
+        self.animal_strengths = {"M": 1, "L": 7, "T": 6, "E": 8, "O": 5,"D": 4, "W": 3, "C": 2}
         self.white_to_move = True
         self.move_log = []
         self.white_king_location = (7, 4)
@@ -226,7 +226,8 @@ class GameState:
 
                     if end_piece == "--" and not self.inWater(end_row,end_col) and self.moveNotOwnDen(end_row,end_col,enemy_color):  # empty space is valid and Not in Water
                         moves.append(Move((row, col), (end_row, end_col), self.board))
-                    elif end_piece[0] == enemy_color and self.canAttack(row, col, end_row, end_col):  # capture enemy piece, if the enemy is weaker or trapped
+
+                    elif end_piece[0] == enemy_color  and not self.inWater(end_row,end_col) and self.canAttack(row, col, end_row, end_col):  # capture enemy piece, if the enemy is weaker or trapped
                         moves.append(Move((row, col), (end_row, end_col), self.board))
                         break
                     else:  # friendly piece

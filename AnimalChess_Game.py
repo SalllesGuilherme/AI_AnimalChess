@@ -355,4 +355,5 @@ Please type one of the numbers below for choose a mode for play:
 
 if __name__ == "__main__":
     player1,player2 = start_page()
+    print("Loading... ")
     main(player1,player2)
