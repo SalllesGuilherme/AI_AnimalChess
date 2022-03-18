@@ -19,16 +19,27 @@ class GameState:
         The second character represents the type of the piece: 'M', 'L', 'T', 'E', 'O', 'D','T','L.
         "--" represents an empty space with no piece.
         """
+        # self.board = [
+        #     ["bL", "--", "--", "--", "--", "--", "bT"],
+        #     ["--", "bD", "--", "--", "--", "bC", "--"],
+        #     ["bM", "--", "bO", "--", "bW", "--", "bE"],
+        #     ["--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--"],
+        #     ["rE", "--", "rW", "--", "rO", "--", "rM"],
+        #     ["--", "rC", "--", "--", "--", "rD", "--"],
+        #     ["rT", "--", "--", "--", "--", "--", "rL"]]
+
         self.board = [
-            ["bL", "--", "--", "--", "--", "--", "bT"],
-            ["--", "bD", "--", "--", "--", "bC", "--"],
-            ["bM", "--", "bO", "--", "bW", "--", "bE"],
+            ["--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "rL"],
+            ["--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "bT", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--"],
-            ["rE", "--", "rW", "--", "rO", "--", "rM"],
-            ["--", "rC", "--", "--", "--", "rD", "--"],
-            ["rT", "--", "--", "--", "--", "--", "rL"]]
+            ["--", "--", "--", "--", "--", "--", "--"]]
 
         self.moveFunctions = {"M": self.getRatMoves, "L": self.getJumpMoves,"T": self.getJumpMoves,
                               "E": self.getNormalMoves, "O": self.getNormalMoves,"D": self.getNormalMoves,
@@ -41,12 +52,8 @@ class GameState:
         self.black_king_location = (0, 4)
         self.red_trap_locations = [(7,3), (8,2), (8, 4)]
         self.black_trap_locations = [(1,3), (0,2), (0, 4)]
-        self.checkmate = False
         self.den_invaded = False
-        self.stalemate = False
-        self.in_check = False
-        self.pins = []
-        self.checks = []
+        self.draw = False
 
 
     def makeMove(self, move):
@@ -56,7 +63,6 @@ class GameState:
         self.move_log.append(move)  # log the move so we can undo it later
         self.white_to_move = not self.white_to_move  # switch players
 
-
     def undoMove(self):
 
         if len(self.move_log) != 0:  # make sure that there is a move to undo
@@ -64,8 +70,8 @@ class GameState:
             self.board[move.start_row][move.start_col] = move.piece_moved
             self.board[move.end_row][move.end_col] = move.piece_captured
             self.white_to_move = not self.white_to_move  # swap players
-            self.checkmate = False
-            self.stalemate = False
+            self.den_invaded = False
+            self.draw = False
 
 
 
@@ -73,27 +79,26 @@ class GameState:
         """
         All valid moves.
         """
-        moves = []
-
+        #moves = []
         moves = self.getAllPossibleMoves()
 
         if len(moves) == 0:
-            self.den_invaded = True
-            # if self.inCheck():
-            #     self.checkmate = True
-            # else:
-            #     # TODO stalemate on repeated moves
-            #     print('Empate?')
-            #     #self.stalemate = True
+            print("No Possible moves?")
         else:
-            self.checkmate = False
-            self.stalemate = False
+            self.den_invaded = False
+            self.draw = False
 
-        if self.enemyConquerDen():
-            self.den_invaded=True
-        else:
-            self.den_invaded=False
+        return moves
 
+    def getAllPossibleMoves(self):
+
+        moves = []
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                turn = self.board[row][col][0]
+                if (turn == "r" and self.white_to_move) or (turn == "b" and not self.white_to_move):
+                    piece = self.board[row][col][1]
+                    self.moveFunctions[piece](row, col, moves)  # calls appropriate move function based on piece type
         return moves
 
 
@@ -132,21 +137,13 @@ class GameState:
 
     def enemyConquerDen(self):
         if self.board[0][3][0] == "r" or self.board[8][3][0] == "b":
+            self.den_invaded = True
+            print("Enemy on the DEN?")
             return True
         else:
             return False
 
 
-    def getAllPossibleMoves(self):
-
-        moves = []
-        for row in range(len(self.board)):
-            for col in range(len(self.board[row])):
-                turn = self.board[row][col][0]
-                if (turn == "r" and self.white_to_move) or (turn == "b" and not self.white_to_move):
-                    piece = self.board[row][col][1]
-                    self.moveFunctions[piece](row, col, moves)  # calls appropriate move function based on piece type
-        return moves
 
 
     def canAttack(self, own_row, own_col, row_end, col_end):
@@ -319,12 +316,8 @@ class Move:
         return self.cols_to_files[col] + self.rows_to_ranks[row]
 
     def __str__(self):
-        # if self.is_castle_move:
-        #     return "0-0" if self.end_col == 6 else "0-0-0"
 
         end_square = self.getRankFile(self.end_row, self.end_col)
-
-
         move_string = self.piece_moved[1]
         if self.is_capture:
             move_string += "x"

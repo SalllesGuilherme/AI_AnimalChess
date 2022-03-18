@@ -12,8 +12,8 @@ Library for generate the AI moves
 """
 
 import random
-
-piece_score = {"E": 100, "M": 80, "L": 100, "T": 80, "O": 50, "W": 40,"D": 30,"C": 20}
+from math import inf
+#piece_score = {"E": 100, "M": 80, "L": 100, "T": 80, "O": 50, "W": 40,"D": 30,"C": 20}
 
 mouse_score = [[11, 13, 50, 100000, 50, 13, 13],
                 [11, 12, 13, 50, 13, 13, 13],
@@ -122,15 +122,14 @@ DEPTH=4
 def findRandomMove(valid_moves):
     return valid_moves[random.randint(0,len(valid_moves)-1)]
 
-
-def findBestMove(game_state, valid_moves):
+def find_GreadyMove(game_state, valid_moves):
     turnMultiplier = 1 if game_state.white_to_move else -1
     maxScore = -DEN_CONQUESTED
     bestMove = None
 
     for playerMove in valid_moves:
         game_state.makeMove(playerMove)
-        score = turnMultiplier * scoreMaterial(game_state.board)
+        score = turnMultiplier * scoreMaterial(game_state)
 
         if score > maxScore:
             maxScore = score
@@ -142,7 +141,6 @@ def findBestMove(game_state, valid_moves):
 
 def scoreMaterial(game_state):
     score = 0
-    #enemy_color = "b" if game_state.white_to_move else "r"
 
     for row in range(len(game_state.board)):
         for col in range(len(game_state.board[row])):
@@ -150,12 +148,11 @@ def scoreMaterial(game_state):
             if piece != "--":
                 piece_position_score = 0
                 piece_position_score = piece_position_scores[piece][row][col]
-
                 if piece[0] == 'r':
-                    score += piece_score[piece[1]] + piece_position_score
+                    score +=  piece_position_score #+ piece_score[piece[1]]
 
                 elif piece[0] == 'b':
-                     score -= piece_score[piece[1]] + piece_position_score
+                     score -=  piece_position_score #+ piece_score[piece[1]]
 
     return score
 
@@ -163,30 +160,76 @@ def findMoveNegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_m
     global next_move
     if depth == 0:
         return turn_multiplier * scoreMaterial(game_state)
-    # move ordering - implement later
-    max_score = -DEN_CONQUESTED
+
+    max_score = -inf
     for move in valid_moves:
         game_state.makeMove(move)
         next_moves = game_state.getValidMoves()
         score = -findMoveNegaMaxAlphaBeta(game_state, next_moves, depth - 1, -beta, -alpha, -turn_multiplier)
-        if score > max_score:
+        if depth == 0:
+            print(f"{turn_multiplier} move:{move}, depth:{depth},score:{score},max:{max_score}")
+        if score > max_score:   # > or >= ??
             max_score = score
             if depth == DEPTH:
                 next_move = move
+                print("move found")
         game_state.undoMove()
         if max_score > alpha:
-            alpha = max_score
+             alpha = max_score
         if alpha >= beta:
             break
     return max_score
 
+
+def findMoveNegaMaxAlphaBeta_new(game_state, valid_moves, depth, alpha, beta, turn_multiplier):
+    global next_move
+
+    def max_value(game_state,next_moves, alpha, beta,depth):
+        if depth == 0:
+            return turn_multiplier * scoreMaterial(game_state)
+        v = -inf
+        for move in valid_moves:
+            next_moves = game_state.getValidMoves()
+            v = max(v, min_value(game_state,next_moves, alpha, beta,depth - 1))
+            game_state.undoMove()
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+        return v
+
+    def min_value(game_state,next_moves, alpha, beta,depth):
+        if depth == 0:
+            return turn_multiplier * scoreMaterial(game_state)
+        v = -inf
+        for move in valid_moves:
+            next_moves = game_state.getValidMoves()
+            v = min(v, max_value(game_state,next_moves, alpha, beta,depth - 1))
+            game_state.undoMove()
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
+        return v
+
+    # Body of alpha_beta_search:
+    best_score = -inf
+    beta = inf
+    best_action = None
+    for move in valid_moves:
+        v = min_value(game_state,valid_moves, best_score, beta,depth)
+        if v > best_score:
+            best_score = v
+            best_action = move
+    return best_action
+
 def findBestMove_AlphaBeta(game_state, valid_moves):
     global next_move
     next_move = None
-
     random.shuffle(valid_moves)
+    for i in valid_moves:
+        print(f"possible: {i}")
     findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -DEN_CONQUESTED, DEN_CONQUESTED,1 if game_state.white_to_move else -1)
 
+    #return_queue.put(next_move)
     return next_move
 
 
