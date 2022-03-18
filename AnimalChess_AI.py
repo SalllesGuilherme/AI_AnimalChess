@@ -95,8 +95,6 @@ elephant_score = [[25, 30, 100, 100000, 100, 30, 25],
                 [11, 11, 11, 11, 11, 11, 11],
                 [11, 11, 11, 0, 11, 11, 11]]
 
-pieces = ['bT','bE','bC','bW','bO','bD','bM','bL','rT','rE','rC','rW','rO','rD','rM','rL','trap','den','grass','water']
-
 piece_position_scores = {"rM": mouse_score,
                          "bM": mouse_score[::-1],
                          "rC": cat_score,
@@ -144,21 +142,20 @@ def findBestMove(game_state, valid_moves):
 
 def scoreMaterial(game_state):
     score = 0
+    #enemy_color = "b" if game_state.white_to_move else "r"
+
     for row in range(len(game_state.board)):
         for col in range(len(game_state.board[row])):
             piece = game_state.board[row][col]
             if piece != "--":
                 piece_position_score = 0
                 piece_position_score = piece_position_scores[piece][row][col]
-                if piece[0] == "r":
-                    score += piece_score[piece[1]] + piece_position_score
-                elif piece[0] == "b":
-                    score -= piece_score[piece[1]] + piece_position_score
 
-            # if square[0] == 'r':
-            #     score = score + piece_score[square[1]] + piece_position_score
-            # elif square[0] == 'b':
-            #     score = score - piece_score[square[1]] + piece_position_score
+                if piece[0] == 'r':
+                    score += piece_score[piece[1]] + piece_position_score
+
+                elif piece[0] == 'b':
+                     score -= piece_score[piece[1]] + piece_position_score
 
     return score
 

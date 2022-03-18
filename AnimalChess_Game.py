@@ -14,7 +14,7 @@ Main code for run the game, it handle user input and GUI
 import pygame as p
 import AnimalChess_Engine_Rules,AnimalChess_AI
 import sys
-from multiprocessing import Process, Queue
+from time import process_time
 
 WIDTH = 512 #448
 HEIGHT = 512 #572
@@ -57,6 +57,10 @@ def main(player1,player2):
     move_log_font = p.font.SysFont("Arial", 14, False, False)
     player_one = player1   # True for Human, False for AI
     player_two = player2  # True for Human, False for AI
+    Total_time_p1 = 0
+    Total_time_p2 = 0
+    Total_move_p1 = 0
+    Total_move_p2 = 0
 
     while running:
         human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two)
@@ -101,8 +105,8 @@ def main(player1,player2):
                     move_undone = True
 
                 if e.key == p.K_h:
-                    print("Time for Hint \nAI recomends this move:")
-                    ai_move = AnimalChess_AI.findBestMove(game_state, valid_moves)
+                    print("JucAI recomends this move:")
+                    ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state, valid_moves)
                     print(ai_move)
 
                 if e.key == p.K_r:  # reset the game when 'r' is pressed
@@ -118,29 +122,52 @@ def main(player1,player2):
                         ai_thinking = False
                     move_undone = True
 
-        # AI move finder
-        if not game_over and not human_turn and not move_undone:
-            #if not ai_thinking:
-            #    ai_thinking = True
-            #    ai_move=[]
-                #return_queue = Queue()  # used to pass data between threads
-                #move_finder_process = Process(target=AnimalChess_AI.findBestMove, args=(game_state, valid_moves, return_queue))
-                #move_finder_process.start()
-
-        #if not move_finder_process.is_alive():
-            #ai_move = return_queue.get()
-            #if ai_move is None:
+    # AI move finder for player 1
+        if not game_over and not human_turn and not move_undone and not player_one:
+            t1_start = process_time()
             ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state , valid_moves)
-            print(ai_move)
+
             if ai_move is not None:
                 game_state.makeMove(ai_move)
                 move_made = True
                 animate = True
+                t1_stop = process_time()
             else:
-                game_state.den_invaded=True
-            #ai_thinking = False
+                game_state.den_invaded=True   #\\Improve the condition for not move
 
-        if move_made:
+            #Log performance AI1
+            delta_t1=t1_stop-t1_start
+            Total_time_p1 += delta_t1
+            Total_move_p1 += 1
+            print(f"AI 1: {ai_move}, Thinking Time:{delta_t1} , Total time:{Total_time_p1}, Move:{Total_move_p1}")
+
+        if move_made and not player_one:
+            if animate:
+                animateMove(game_state.move_log[-1], screen, game_state.board, clock)
+            valid_moves = game_state.getValidMoves()
+            move_made = False
+            animate = False
+            move_undone = False
+
+    # AI move finder for player 2
+        if not game_over and not human_turn and not move_undone and not player_two:
+            t2_start = process_time()
+            ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state, valid_moves)
+            if ai_move is not None:
+                game_state.makeMove(ai_move)
+                move_made = True
+                animate = True
+                t2_stop = process_time()
+            else:
+                game_state.den_invaded = True  # \\Improve the condition for not move
+
+            # Log performance AI2
+            delta_t2 = t2_stop - t2_start
+            Total_time_p2 += delta_t2
+            Total_move_p2 += 1
+            print(f"AI 2: {ai_move}, Thinking Time:{delta_t2}, Total time:{Total_time_p2}")
+
+        if move_made and not player_two:
             if animate:
                 animateMove(game_state.move_log[-1], screen, game_state.board, clock)
             valid_moves = game_state.getValidMoves()
@@ -159,10 +186,6 @@ def main(player1,player2):
                 drawEndGameText(screen, "Black wins")
             else:
                 drawEndGameText(screen, "Red wins")
-
-        elif game_state.stalemate:
-            game_over = True
-            drawEndGameText(screen, "Stalemate")
 
         clock.tick(MAX_FPS)
         p.display.flip()
