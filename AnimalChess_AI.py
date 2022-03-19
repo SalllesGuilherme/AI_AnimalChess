@@ -13,6 +13,7 @@ Library for generate the AI moves
 
 import random
 from math import inf
+import collections
 #piece_score = {"E": 100, "M": 80, "L": 100, "T": 80, "O": 50, "W": 40,"D": 30,"C": 20}
 
 mouse_score = [[11, 13, 50, 100000, 50, 13, 13],
@@ -25,14 +26,14 @@ mouse_score = [[11, 13, 50, 100000, 50, 13, 13],
                 [8, 8, 8, 9, 9, 9, 9],
                 [8, 8, 8, 0, 8, 8, 8]]
 
-cat_score = [[11, 15, 50, 100000, 50, 15, 13],
-                [11, 12, 13, 50, 13, 13, 13],
-                [10, 11, 11, 15, 11, 11, 10],
-                [10, 0, 0, 11,0, 0, 13],
-                [10, 0, 0, 9, 0, 0, 12],
-                [10, 0, 0, 9, 0, 0, 11],
-                [10, 0, 0, 9, 0, 0, 10],
-                [13, 10, 8, 8, 8,8, 8],
+cat_score = [[11, 15, 50, 100000, 50, 15, 11],
+                [12, 12, 20, 50, 20, 15, 12],
+                [14, 15, 20, 20, 20, 14, 14],
+                [13, 14, 14, 13,0, 14, 13],
+                [12, 0, 0, 12, 0, 0, 12],
+                [11, 0, 0, 11, 0, 0, 11],
+                [10, 0, 0, 10, 0, 0, 10],
+                [8, 8, 8, 8, 8,8, 8],
                 [8, 8, 8, 0, 8, 8, 8]]
 
 wolf_score = [[11, 15, 50, 100000, 50, 15, 13],
@@ -48,11 +49,11 @@ wolf_score = [[11, 15, 50, 100000, 50, 15, 13],
 dog_score = [[11, 15, 50, 100000, 50, 15, 13],
                 [11, 12, 13, 50, 13, 13, 13],
                 [10, 11, 11, 15, 11, 11, 10],
-                [10, 0, 0, 11,0, 0, 13],
-                [10, 0, 0, 9, 0, 0, 12],
-                [10, 0, 0, 9, 0, 0, 11],
-                [10, 0, 0, 9, 0, 0, 10],
-                [13, 10, 8, 8, 8,8, 8],
+                [10, 0, 0, 13,0, 0, 13],
+                [10, 0, 0, 12, 0, 0, 12],
+                [10, 0, 0, 11, 0, 0, 11],
+                [10, 0, 0, 10, 0, 0, 10],
+                [8, 8, 8, 8, 8,8, 8],
                 [8, 8, 8, 0, 8, 8, 8]]
 
 leopard_score = [[11, 15, 50, 100000, 50, 15, 13],
@@ -65,9 +66,9 @@ leopard_score = [[11, 15, 50, 100000, 50, 15, 13],
                 [13, 10, 8, 8, 8,8, 8],
                 [8, 8, 8, 0, 8, 8, 8]]
 
-tiger_score = [[25, 30, 150, 100000, 150, 30, 25],
-                [25, 25, 30, 150, 30, 25, 25],
-                [18, 20, 20, 30, 20, 20, 18],
+tiger_score = [[20, 40, 150, 100000, 150, 40, 20],
+                [20, 25, 40, 150, 40, 25, 20],
+                [18, 30, 30, 20, 30, 30, 18],
                 [8, 0, 0, 15,0, 0, 15],
                 [8, 0, 0, 15, 0, 0, 12],
                 [8, 0, 0, 15, 0, 0, 11],
@@ -159,6 +160,7 @@ def scoreMaterial(game_state):
 def findMoveNegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_multiplier):
     global next_move
     if depth == 0:
+        print(f"{turn_multiplier} move:{next_move}, depth:{depth},score:{turn_multiplier * scoreMaterial(game_state)},A B:{alpha,beta}")
         return turn_multiplier * scoreMaterial(game_state)
 
     max_score = -inf
@@ -166,8 +168,7 @@ def findMoveNegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_m
         game_state.makeMove(move)
         next_moves = game_state.getValidMoves()
         score = -findMoveNegaMaxAlphaBeta(game_state, next_moves, depth - 1, -beta, -alpha, -turn_multiplier)
-        if depth == 0:
-            print(f"{turn_multiplier} move:{move}, depth:{depth},score:{score},max:{max_score}")
+
         if score > max_score:   # > or >= ??
             max_score = score
             if depth == DEPTH:
@@ -224,12 +225,36 @@ def findMoveNegaMaxAlphaBeta_new(game_state, valid_moves, depth, alpha, beta, tu
 def findBestMove_AlphaBeta(game_state, valid_moves):
     global next_move
     next_move = None
+
     random.shuffle(valid_moves)
+    ordered_valid_moves=orderby_GreadyMove(game_state, valid_moves)
+
     for i in valid_moves:
         print(f"possible: {i}")
-    findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -DEN_CONQUESTED, DEN_CONQUESTED,1 if game_state.white_to_move else -1)
+    for i in ordered_valid_moves:
+        print(f"new possible: {i}")
+    findMoveNegaMaxAlphaBeta(game_state, ordered_valid_moves, DEPTH, -DEN_CONQUESTED, DEN_CONQUESTED,1 if game_state.white_to_move else -1)
 
     return next_move
+
+
+def orderby_GreadyMove(game_state, valid_moves):
+    turnMultiplier = 1 if game_state.white_to_move else -1
+    maxScore = -DEN_CONQUESTED
+    de = collections.deque([])
+
+    for playerMove in valid_moves:
+        game_state.makeMove(playerMove)
+        score = turnMultiplier * scoreMaterial(game_state)
+
+        if score > maxScore:
+            maxScore = score
+            de.appendleft(playerMove)
+        else:
+            de.append(playerMove)
+
+        game_state.undoMove()
+    return de
 
 
 

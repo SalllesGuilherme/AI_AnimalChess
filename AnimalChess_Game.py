@@ -101,7 +101,7 @@ def main(player1,player2):
                     move_undone = True
 
                 if e.key == p.K_h:
-                    print("JucAI recomends this move:")
+                    print("JucAI recomends move:")
                     ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state, valid_moves)
                     print(ai_move)
 
