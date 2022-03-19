@@ -14,8 +14,7 @@ Main code for run the game, it handle user input and GUI
 import pygame as p
 import AnimalChess_Engine_Rules,AnimalChess_AI
 import sys
-from time import process_time
-import threading, queue
+
 
 WIDTH = 512 #448
 HEIGHT = 512 #572
@@ -58,10 +57,6 @@ def main(player1,player2):
     move_log_font = p.font.SysFont("Arial", 14, False, False)
     player_one = player1   # True for Human, False for AI
     player_two = player2  # True for Human, False for AI
-    Total_time_p1 = 0
-    Total_time_p2 = 0
-    Total_move_p1 = 0
-    Total_move_p2 = 0
 
     while running:
         human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two)
@@ -118,58 +113,25 @@ def main(player1,player2):
                     move_made = False
                     animate = False
                     game_over = False
-                    if ai_thinking:
-                        move_finder_process.terminate()
-                        ai_thinking = False
                     move_undone = True
 
-    # AI move finder for player 1
-        if not game_over and not human_turn and not move_undone and not player_one:
-            t1_start = process_time()
-            ai_move1 = AnimalChess_AI.findBestMove_AlphaBeta(game_state , valid_moves)
-            if ai_move1 is not None:
-                game_state.makeMove(ai_move1)
+        # AI move finder
+        if not game_over and not human_turn and not move_undone:
+            ai_move=[]
+            ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state , valid_moves)
+            print(ai_move)
+            if ai_move is not None:
+                game_state.makeMove(ai_move)
                 move_made = True
                 animate = True
-                t1_stop = process_time()
             else:
-                print('Nothing to do')
-                move_made = True
-
-            #Log performance AI1
-            delta_t1=t1_stop-t1_start
-            Total_time_p1 += delta_t1
-            Total_move_p1 += 1
-            print(f"AI 1: {ai_move1}, Thinking Time:{delta_t1} , Total time:{Total_time_p1}, Move:{Total_move_p1}")
-
-        if move_made and not player_one:
-            if animate:
-                animateMove(game_state.move_log[-1], screen, game_state.board, clock)
-            valid_moves = game_state.getValidMoves()
-            move_made = False
-            animate = False
-            move_undone = False
-
-    # AI move finder for player 2
-        if not game_over and not human_turn and not move_undone and not player_two:
-            t2_start = process_time()
-            ai_move2 = AnimalChess_AI.findBestMove_AlphaBeta(game_state , valid_moves)
-            if ai_move2 is not None:
-                game_state.makeMove(ai_move2)
+                print("Out of moves? Go gready")
+                ai_move = AnimalChess_AI.find_GreadyMove(game_state, valid_moves)
+                game_state.makeMove(ai_move)
                 move_made = True
                 animate = True
-                t2_stop = process_time()
-            else:
-                print('Nothing to do')
-                move_made = True
 
-            # Log performance AI2
-            delta_t2 = t2_stop - t2_start
-            Total_time_p2 += delta_t2
-            Total_move_p2 += 1
-            print(f"AI 2: {ai_move2}, Thinking Time:{delta_t2}, Total time:{Total_time_p2}")
-
-        if move_made and not player_two:
+        if move_made:
             if animate:
                 animateMove(game_state.move_log[-1], screen, game_state.board, clock)
             valid_moves = game_state.getValidMoves()

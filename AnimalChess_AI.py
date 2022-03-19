@@ -229,7 +229,6 @@ def findBestMove_AlphaBeta(game_state, valid_moves):
         print(f"possible: {i}")
     findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -DEN_CONQUESTED, DEN_CONQUESTED,1 if game_state.white_to_move else -1)
 
-    #return_queue.put(next_move)
     return next_move
 
 

@@ -138,7 +138,6 @@ class GameState:
     def enemyConquerDen(self):
         if self.board[0][3][0] == "r" or self.board[8][3][0] == "b":
             self.den_invaded = True
-            print("Enemy on the DEN?")
             return True
         else:
             return False
