@@ -157,23 +157,23 @@ def scoreMaterial(game_state):
 
     return score
 
-def findMoveNegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_multiplier):
+def findMove_NegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_multiplier):
     global next_move
     if depth == 0:
-        print(f"{turn_multiplier} move:{next_move}, depth:{depth},score:{turn_multiplier * scoreMaterial(game_state)},A B:{alpha,beta}")
+        #print(f"{turn_multiplier} move:{next_move}, depth:{depth},score:{turn_multiplier * scoreMaterial(game_state)},A B:{alpha,beta}")
         return turn_multiplier * scoreMaterial(game_state)
 
     max_score = -inf
     for move in valid_moves:
         game_state.makeMove(move)
         next_moves = game_state.getValidMoves()
-        score = -findMoveNegaMaxAlphaBeta(game_state, next_moves, depth - 1, -beta, -alpha, -turn_multiplier)
+        score = -findMove_NegaMaxAlphaBeta(game_state, next_moves, depth - 1, -beta, -alpha, -turn_multiplier)
 
         if score > max_score:   # > or >= ??
             max_score = score
             if depth == DEPTH:
                 next_move = move
-                print("move found")
+                #print("Move found")
         game_state.undoMove()
         if max_score > alpha:
              alpha = max_score
@@ -182,7 +182,7 @@ def findMoveNegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_m
     return max_score
 
 
-def findMoveNegaMaxAlphaBeta_new(game_state, valid_moves, depth, alpha, beta, turn_multiplier):
+def findMove_MiniMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_multiplier):
     global next_move
 
     def max_value(game_state,next_moves, alpha, beta,depth):
@@ -222,18 +222,18 @@ def findMoveNegaMaxAlphaBeta_new(game_state, valid_moves, depth, alpha, beta, tu
             best_action = move
     return best_action
 
-def findBestMove_AlphaBeta(game_state, valid_moves):
+def find_BestMove(game_state, valid_moves):
     global next_move
     next_move = None
 
     random.shuffle(valid_moves)
     ordered_valid_moves=orderby_GreadyMove(game_state, valid_moves)
 
-    for i in valid_moves:
-        print(f"possible: {i}")
-    for i in ordered_valid_moves:
-        print(f"new possible: {i}")
-    findMoveNegaMaxAlphaBeta(game_state, ordered_valid_moves, DEPTH, -DEN_CONQUESTED, DEN_CONQUESTED,1 if game_state.white_to_move else -1)
+    # for i in valid_moves:
+    #     print(f"Possible: {i}")
+    # for i in ordered_valid_moves:
+    #     print(f"New possible: {i}")
+    findMove_NegaMaxAlphaBeta(game_state, ordered_valid_moves, DEPTH, -DEN_CONQUESTED, DEN_CONQUESTED,1 if game_state.white_to_move else -1)
 
     return next_move
 

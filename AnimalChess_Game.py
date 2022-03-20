@@ -14,6 +14,7 @@ Main code for run the game, it handle user input and GUI
 import pygame as p
 import AnimalChess_Engine_Rules,AnimalChess_AI
 import sys
+from time import process_time
 
 
 WIDTH = 512 #448
@@ -28,6 +29,11 @@ DIMENSION_COL = 7
 SQUARE_SIZE = 64 #BOARD_HEIGHT // DIMENSION
 MAX_FPS = 15
 IMAGES = {}
+Total_time_p1 = 0
+Total_time_p2 = 0
+Total_move_p1 = 0
+Total_move_p2 = 0
+
 
 
 def loadImages():
@@ -95,14 +101,11 @@ def main(player1,player2):
                     move_made = True
                     animate = False
                     game_over = False
-                    if ai_thinking:
-                        move_finder_process.terminate()
-                        ai_thinking = False
                     move_undone = True
 
                 if e.key == p.K_h:
                     print("JucAI recomends move:")
-                    ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state, valid_moves)
+                    ai_move = AnimalChess_AI.find_BestMove(game_state, valid_moves)
                     print(ai_move)
 
                 if e.key == p.K_r:  # reset the game when 'r' is pressed
@@ -117,19 +120,45 @@ def main(player1,player2):
 
         # AI move finder
         if not game_over and not human_turn and not move_undone:
-            ai_move=[]
-            ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state , valid_moves)
-            print(ai_move)
-            if ai_move is not None:
-                game_state.makeMove(ai_move)
-                move_made = True
-                animate = True
-            else:
-                print("Out of moves? Go gready")
-                ai_move = AnimalChess_AI.find_GreadyMove(game_state, valid_moves)
-                game_state.makeMove(ai_move)
-                move_made = True
-                animate = True
+
+            if not player_one: #RED
+                print(f" AI1 plays")
+                t1_start = process_time()
+                ai_move=[]
+                ai_move = AnimalChess_AI.find_BestMove(game_state , valid_moves)
+                print(ai_move)
+                if ai_move is not None:
+                    game_state.makeMove(ai_move)
+                    move_made = True
+                    animate = True
+                else:
+                    print("Out of moves? Go gready")
+                    ai_move = AnimalChess_AI.find_GreadyMove(game_state, valid_moves)
+                    game_state.makeMove(ai_move)
+                    move_made = True
+                    animate = True
+                t1_stop = process_time()
+                log_perfomance(t1_start,t1_stop,1,ai_move,0)
+
+            elif not player_two: #Black
+                print(f" AI2 plays")
+                t2_start = process_time()
+                ai_move = []
+                ai_move = AnimalChess_AI.find_BestMove(game_state, valid_moves)
+                print(ai_move)
+                if ai_move is not None:
+                    game_state.makeMove(ai_move)
+                    move_made = True
+                    animate = True
+                else:
+                    print("Out of moves? Go gready")
+                    ai_move = AnimalChess_AI.find_GreadyMove(game_state, valid_moves)
+                    game_state.makeMove(ai_move)
+                    move_made = True
+                    animate = True
+                t2_stop=process_time()
+                log_perfomance(t2_start,t2_stop,2,ai_move,0)
+
 
         if move_made:
             if animate:
@@ -287,6 +316,24 @@ def animateMove(move, screen, board, clock):
         screen.blit(IMAGES[move.piece_moved], p.Rect(col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
         p.display.flip()
         clock.tick(60)
+
+def log_perfomance(t_start,t_stop,player,move,gameover):
+    global Total_time_p1
+    global Total_time_p2
+    global Total_move_p1
+    global Total_move_p2
+
+    delta_t=0
+    delta_t = t_stop - t_start
+    if player == 1:
+        Total_time_p1 += delta_t
+        Total_move_p1 += 1
+        print(f"AI 1: {move}, Thinking Time:{delta_t} , Total time:{Total_time_p1}, Move:{Total_move_p1}")
+    elif player == 2:
+        Total_time_p2 += delta_t
+        Total_move_p2 += 1
+        print(f"AI 1: {move}, Thinking Time:{delta_t} , Total time:{Total_time_p2}, Move:{Total_move_p2}")
+
 
 def start_page():
 
