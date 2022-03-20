@@ -57,7 +57,7 @@ class GameState:
                               "W": self.getNormalMoves, "C": self.getNormalMoves}
 
         self.animal_strengths = {"M": 1, "L": 7, "T": 6, "E": 8, "O": 5,"D": 4, "W": 3, "C": 2}
-        self.white_to_move = True
+        self.red_to_move = True
         self.move_log = []
         self.white_king_location = (7, 4)
         self.black_king_location = (0, 4)
@@ -72,7 +72,7 @@ class GameState:
         self.board[move.start_row][move.start_col] = "--"
         self.board[move.end_row][move.end_col] = move.piece_moved
         self.move_log.append(move)  # log the move so we can undo it later
-        self.white_to_move = not self.white_to_move  # switch players
+        self.red_to_move = not self.red_to_move  # switch players
 
     def undoMove(self):
 
@@ -80,7 +80,7 @@ class GameState:
             move = self.move_log.pop()
             self.board[move.start_row][move.start_col] = move.piece_moved
             self.board[move.end_row][move.end_col] = move.piece_captured
-            self.white_to_move = not self.white_to_move  # swap players
+            self.red_to_move = not self.red_to_move  # swap players
             self.den_invaded = False
             self.draw = False
 
@@ -94,7 +94,7 @@ class GameState:
         moves = self.getAllPossibleMoves()
 
         if len(moves) == 0:
-            print("No Possible moves?")
+            print("moves?")
         else:
             self.den_invaded = False
             self.draw = False
@@ -107,7 +107,7 @@ class GameState:
         for row in range(len(self.board)):
             for col in range(len(self.board[row])):
                 turn = self.board[row][col][0]
-                if (turn == "r" and self.white_to_move) or (turn == "b" and not self.white_to_move):
+                if (turn == "r" and self.red_to_move) or (turn == "b" and not self.red_to_move):
                     piece = self.board[row][col][1]
                     self.moveFunctions[piece](row, col, moves)  # calls appropriate move function based on piece type
         return moves
@@ -203,7 +203,7 @@ class GameState:
     def getRatMoves(self, row, col, moves):
 
         directions = ((-1, 0), (0, -1), (1, 0), (0, 1))  # up, left, down, right
-        enemy_color = "b" if self.white_to_move else "r"
+        enemy_color = "b" if self.red_to_move else "r"
         for direction in directions:
             for i in range(1, 2):
                 end_row = row + direction[0] * 1
@@ -223,7 +223,7 @@ class GameState:
     def getNormalMoves(self, row, col, moves):
 
         directions = ((-1, 0), (0, -1), (1, 0), (0, 1))  # up, left, down, right
-        enemy_color = "b" if self.white_to_move else "r"
+        enemy_color = "b" if self.red_to_move else "r"
         for direction in directions:
             for i in range(1, 2):
                 end_row = row + direction[0] * 1
@@ -245,7 +245,7 @@ class GameState:
     def getJumpMoves(self, row, col, moves):
 
         directions = ((-1, 0), (0, -1), (1, 0), (0, 1))  # up, left, down, right
-        enemy_color = "b" if self.white_to_move else "r"
+        enemy_color = "b" if self.red_to_move else "r"
         for direction in directions:
             for i in range(1, 2):
                 end_row = row + direction[0] * 1

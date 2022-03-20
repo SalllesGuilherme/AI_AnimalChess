@@ -42,7 +42,7 @@ def loadImages():
         IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQUARE_SIZE, SQUARE_SIZE))
 
 
-def main(player1,player2):
+def main(player1,player2,depth_p1,depth_p2):
 
     p.init()
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
@@ -65,7 +65,7 @@ def main(player1,player2):
     player_two = player2  # True for Human, False for AI
 
     while running:
-        human_turn = (game_state.white_to_move and player_one) or (not game_state.white_to_move and player_two)
+        human_turn = (game_state.red_to_move and player_one) or (not game_state.red_to_move and player_two)
         for e in p.event.get():
             if e.type == p.QUIT:
                 p.quit()
@@ -105,7 +105,7 @@ def main(player1,player2):
 
                 if e.key == p.K_h:
                     print("JucAI recomends move:")
-                    ai_move = AnimalChess_AI.find_BestMove(game_state, valid_moves)
+                    ai_move = AnimalChess_AI.find_BestMove(game_state, valid_moves,depth_p1)
                     print(ai_move)
 
                 if e.key == p.K_r:  # reset the game when 'r' is pressed
@@ -121,31 +121,27 @@ def main(player1,player2):
         # AI move finder
         if not game_over and not human_turn and not move_undone:
 
-            if not player_one: #RED
-                print(f" AI1 plays")
+            if not player_one and game_state.red_to_move: #RED
                 t1_start = process_time()
                 ai_move=[]
-                ai_move = AnimalChess_AI.find_BestMove(game_state , valid_moves)
-                print(ai_move)
+                ai_move = AnimalChess_AI.find_BestMove(game_state,valid_moves,depth_p1)
                 if ai_move is not None:
                     game_state.makeMove(ai_move)
                     move_made = True
                     animate = True
                 else:
                     print("Out of moves? Go gready")
-                    ai_move = AnimalChess_AI.find_GreadyMove(game_state, valid_moves)
+                    ai_move = AnimalChess_AI.find_GreadyMove(game_state,valid_moves)
                     game_state.makeMove(ai_move)
                     move_made = True
                     animate = True
                 t1_stop = process_time()
                 log_perfomance(t1_start,t1_stop,1,ai_move,0)
 
-            elif not player_two: #Black
-                print(f" AI2 plays")
+            elif not player_two and not game_state.red_to_move: #Black
                 t2_start = process_time()
                 ai_move = []
-                ai_move = AnimalChess_AI.find_BestMove(game_state, valid_moves)
-                print(ai_move)
+                ai_move = AnimalChess_AI.find_BestMove(game_state, valid_moves,depth_p2)
                 if ai_move is not None:
                     game_state.makeMove(ai_move)
                     move_made = True
@@ -175,7 +171,7 @@ def main(player1,player2):
 
         if game_state.enemyConquerDen():
             game_over = True
-            if game_state.white_to_move:
+            if game_state.red_to_move:
                 drawEndGameText(screen, "Black wins")
             else:
                 drawEndGameText(screen, "Red wins")
@@ -232,7 +228,7 @@ def highlightSquares(screen, game_state, valid_moves, square_selected):
         screen.blit(s, (last_move.end_col * SQUARE_SIZE, last_move.end_row * SQUARE_SIZE))
     if square_selected != ():
         row, col = square_selected
-        if game_state.board[row][col][0] == ('r' if game_state.white_to_move else 'b'):  # square_selected is a piece that can be moved
+        if game_state.board[row][col][0] == ('r' if game_state.red_to_move else 'b'):  # square_selected is a piece that can be moved
             # highlight selected square
             s = p.Surface((SQUARE_SIZE, SQUARE_SIZE))
             s.set_alpha(100)  # transparency value 0 -> transparent, 255 -> opaque
@@ -328,11 +324,11 @@ def log_perfomance(t_start,t_stop,player,move,gameover):
     if player == 1:
         Total_time_p1 += delta_t
         Total_move_p1 += 1
-        print(f"AI 1: {move}, Thinking Time:{delta_t} , Total time:{Total_time_p1}, Move:{Total_move_p1}")
+        print(f"AI1: {move}, Thinking Time:{delta_t} , Total time:{Total_time_p1}, Move:{Total_move_p1}")
     elif player == 2:
         Total_time_p2 += delta_t
         Total_move_p2 += 1
-        print(f"AI 1: {move}, Thinking Time:{delta_t} , Total time:{Total_time_p2}, Move:{Total_move_p2}")
+        print(f"AI2: {move}, Thinking Time:{delta_t} , Total time:{Total_time_p2}, Move:{Total_move_p2}")
 
 
 def start_page():
@@ -385,9 +381,50 @@ Please type one of the numbers below for choose a mode for play:
         except ValueError:
             print(messagevalue)
 
-    return p1,p2
+    return p1,p2,mode
+
+def levelgame(mode):
+    depth_p1=4
+    depth_p2=4
+    not_select = True
+    p1, p2 = False, False
+    msg_select = 'Please type 1-9 for the level of the AI:\n'
+    msg_lvl=   "Easy....Medium....Hard....SuperAI\n"
+    msg_lvl2 = "1...2...3...4...5...6...7...8...9"
+    messagevalue = "If cann't type a number between 1-9, you have no change against our AI"
+
+    while not_select:
+        try:
+            if mode == 1:
+                print("Player vs Player selected")
+                break
+            elif mode == 2:
+                print(msg_select, msg_lvl, msg_lvl2)
+                depth_p2 = int(input())
+                break
+            elif mode == 3:
+                print(msg_select,msg_lvl,msg_lvl2)
+                depth_p1 = int(input())
+                break
+            elif mode == 4:
+                print(msg_select, msg_lvl, msg_lvl2)
+                depth_p1 = int(input())
+                print(msg_select, msg_lvl, msg_lvl2)
+                depth_p2 = int(input())
+                break
+            else:
+                print(messagevalue)
+        except ValueError:
+            print(messagevalue)
+
+    return depth_p1,depth_p2
+
 
 if __name__ == "__main__":
-    player1,player2 = start_page()
+    player1,player2,mode = start_page()
     print("Loading... ")
-    main(player1,player2)
+
+    depth_p1,depth_p2 = levelgame(mode)
+    print("Initialing game...")
+    print(depth_p1,depth_p2)
+    main(player1,player2,depth_p1,depth_p2)

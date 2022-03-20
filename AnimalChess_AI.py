@@ -118,7 +118,7 @@ piece_position_scores = {"rM": mouse_score,
 
 DEN_CONQUESTED=10000
 DRAW=0
-DEPTH=4
+global DEPTH #=4
 
 def findRandomMove(valid_moves):
     return valid_moves[random.randint(0,len(valid_moves)-1)]
@@ -157,7 +157,7 @@ def scoreMaterial(game_state):
 
     return score
 
-def findMove_NegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_multiplier):
+def findMove_NegaMaxAlphaBeta(game_state, valid_moves, depth,DEPTH, alpha, beta, turn_multiplier):
     global next_move
     if depth == 0:
         #print(f"{turn_multiplier} move:{next_move}, depth:{depth},score:{turn_multiplier * scoreMaterial(game_state)},A B:{alpha,beta}")
@@ -167,7 +167,7 @@ def findMove_NegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_
     for move in valid_moves:
         game_state.makeMove(move)
         next_moves = game_state.getValidMoves()
-        score = -findMove_NegaMaxAlphaBeta(game_state, next_moves, depth - 1, -beta, -alpha, -turn_multiplier)
+        score = -findMove_NegaMaxAlphaBeta(game_state, next_moves, depth - 1,DEPTH, -beta, -alpha, -turn_multiplier)
 
         if score > max_score:   # > or >= ??
             max_score = score
@@ -222,8 +222,9 @@ def findMove_MiniMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_
             best_action = move
     return best_action
 
-def find_BestMove(game_state, valid_moves):
+def find_BestMove(game_state, valid_moves,depth_p):
     global next_move
+    DEPTH= depth_p
     next_move = None
 
     random.shuffle(valid_moves)
@@ -233,13 +234,13 @@ def find_BestMove(game_state, valid_moves):
     #     print(f"Possible: {i}")
     # for i in ordered_valid_moves:
     #     print(f"New possible: {i}")
-    findMove_NegaMaxAlphaBeta(game_state, ordered_valid_moves, DEPTH, -DEN_CONQUESTED, DEN_CONQUESTED,1 if game_state.white_to_move else -1)
+    findMove_NegaMaxAlphaBeta(game_state, ordered_valid_moves,depth_p,DEPTH, -DEN_CONQUESTED, DEN_CONQUESTED,1 if game_state.red_to_move else -1)
 
     return next_move
 
 
 def orderby_GreadyMove(game_state, valid_moves):
-    turnMultiplier = 1 if game_state.white_to_move else -1
+    turnMultiplier = 1 if game_state.red_to_move else -1
     maxScore = -DEN_CONQUESTED
     de = collections.deque([])
 
