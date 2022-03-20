@@ -147,7 +147,7 @@ def main(player1,player2,depth_p1,depth_p2):
                     move_made = True
                     animate = True
                 else:
-                    print("Out of moves? Go gready")
+                    print("Out of moves... Go gready")
                     ai_move = AnimalChess_AI.find_GreadyMove(game_state, valid_moves)
                     game_state.makeMove(ai_move)
                     move_made = True
