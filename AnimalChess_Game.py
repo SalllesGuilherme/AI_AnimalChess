@@ -126,6 +126,7 @@ def main(player1,player2):
         if not game_over and not human_turn and not move_undone and not player_one:
             t1_start = process_time()
             ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state , valid_moves)
+            print(f"ai_move = {ai_move}")
 
             if ai_move is not None:
                 game_state.makeMove(ai_move)
@@ -152,7 +153,10 @@ def main(player1,player2):
     # AI move finder for player 2
         if not game_over and not human_turn and not move_undone and not player_two:
             t2_start = process_time()
-            ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state, valid_moves)
+            #ai_move = AnimalChess_AI.findBestMove_AlphaBeta(game_state, valid_moves)
+            ai_move = AnimalChess_AI.main(game_state)
+            print(f"This is the MCTS best move: {ai_move}")
+                         
             if ai_move is not None:
                 game_state.makeMove(ai_move)
                 move_made = True
@@ -189,7 +193,6 @@ def main(player1,player2):
 
         clock.tick(MAX_FPS)
         p.display.flip()
-
 
 def drawGameState(screen, game_state, valid_moves, square_selected):
 
