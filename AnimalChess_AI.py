@@ -40,32 +40,32 @@ cat_score = [[11, 15, 50, 100000, 50, 15, 11],
 wolf_score = [[11, 15, 50, 100000, 50, 15, 11],
                 [12, 12, 20, 50, 20, 15, 12],
                 [14, 15, 20, 20, 20, 14, 14],
-                [13, 14, 14, 13,0, 14, 13],
+                [13, 0, 0, 13,0, 0, 13],
                 [12, 0, 0, 12, 0, 0, 12],
                 [11, 0, 0, 11, 0, 0, 11],
-                [10, 0, 0, 10, 0, 0, 10],
-                [8, 8, 8, 8, 8,8, 8],
-                [8, 8, 8, 0, 8, 8, 8]]
+                [10, 10, 10, 11, 10, 10, 10],
+                [8, 8, 9, 10, 9, 8, 8],
+                [8, 8, 10, 0, 10, 8, 8]]
 
 dog_score = [[11, 15, 50, 100000, 50, 15, 11],
                 [12, 12, 20, 50, 20, 15, 12],
                 [14, 15, 20, 20, 20, 14, 14],
-                [13, 14, 14, 13,0, 14, 13],
+                [13, 0, 0, 13,0, 0, 13],
                 [12, 0, 0, 12, 0, 0, 12],
                 [11, 0, 0, 11, 0, 0, 11],
-                [10, 0, 0, 10, 0, 0, 10],
-                [8, 8, 8, 8, 8,8, 8],
-                [8, 8, 8, 0, 8, 8, 8]]
+                [10, 10, 10, 11, 10, 10, 10],
+                [8, 8, 9, 10, 9, 8, 8],
+                [8, 8, 10, 0, 10, 8, 8]]
 
 leopard_score = [[11, 15, 50, 100000, 50, 15, 11],
                 [12, 12, 20, 50, 20, 15, 12],
                 [14, 15, 20, 20, 20, 14, 14],
-                [13, 14, 14, 13,0, 14, 13],
+                [13, 0, 0, 13,0, 0, 13],
                 [12, 0, 0, 12, 0, 0, 12],
                 [11, 0, 0, 11, 0, 0, 11],
-                [10, 0, 0, 10, 0, 0, 10],
-                [8, 8, 8, 8, 8,8, 8],
-                [8, 8, 8, 0, 8, 8, 8]]
+                [10, 10, 10, 11, 10, 10, 10],
+                [8, 8, 9, 10, 9, 8, 8],
+                [8, 8, 10, 0, 10, 8, 8]]
 
 tiger_score = [[20, 40, 150, 100000, 150, 40, 20],
                 [20, 25, 40, 150, 40, 25, 20],
@@ -143,6 +143,7 @@ def find_GreadyMove(game_state, valid_moves):
 
 def scoreMaterial(game_state):
     score = 0
+    penalty_for_rep = 0
 
     for row in range(len(game_state.board)):
         for col in range(len(game_state.board[row])):
@@ -150,11 +151,13 @@ def scoreMaterial(game_state):
             if piece != "--":
                 piece_position_score = 0
                 piece_position_score = piece_position_scores[piece][row][col]
+                if piece_position_scores[piece][row][col] in last_moves:
+                    penalty_for_rep = 50
                 if piece[0] == 'r':
-                    score +=  piece_position_score + piece_score[piece[1]]
+                    score +=  piece_position_score + piece_score[piece[1]] - penalty_for_rep
 
                 elif piece[0] == 'b':
-                     score -=  piece_position_score + piece_score[piece[1]]
+                     score -=  piece_position_score + piece_score[piece[1]] - penalty_for_rep
 
     return score
 
@@ -227,6 +230,8 @@ def find_BestMove(game_state, valid_moves,depth_p):
     global next_move
     DEPTH= depth_p
     next_move = None
+    global last_moves
+    last_moves = collections.deque(maxlen=8)
 
     random.shuffle(valid_moves)
     ordered_valid_moves=orderby_GreadyMove(game_state, valid_moves)
@@ -236,6 +241,7 @@ def find_BestMove(game_state, valid_moves,depth_p):
     # for i in ordered_valid_moves:
     #     print(f"New possible: {i}")
     findMove_NegaMaxAlphaBeta(game_state, ordered_valid_moves,depth_p,DEPTH, -DEN_CONQUESTED, DEN_CONQUESTED,1 if game_state.red_to_move else -1)
+    last_moves.append(next_move)
 
     return next_move
 
