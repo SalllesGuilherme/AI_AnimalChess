@@ -63,6 +63,7 @@ def main(player1,player2,depth_p1,depth_p2):
     move_log_font = p.font.SysFont("Arial", 14, False, False)
     player_one = player1   # True for Human, False for AI
     player_two = player2  # True for Human, False for AI
+    player_won = 0
 
     while running:
         human_turn = (game_state.red_to_move and player_one) or (not game_state.red_to_move and player_two)
@@ -108,6 +109,12 @@ def main(player1,player2,depth_p1,depth_p2):
                     ai_move = AnimalChess_AI.find_BestMove(game_state, valid_moves,depth_p1)
                     print(ai_move)
 
+                if e.key == p.K_q:
+                    print("\nEND GAME statistics:")
+                    log_perfomance(process_time(), process_time(), 0,0 , 1,depth_p1,depth_p2,player_won)
+                    exit()
+
+
                 if e.key == p.K_r:  # reset the game when 'r' is pressed
                     game_state = AnimalChess_Engine_Rules.GameState()
                     valid_moves = game_state.getValidMoves()
@@ -136,7 +143,7 @@ def main(player1,player2,depth_p1,depth_p2):
                     move_made = True
                     animate = True
                 t1_stop = process_time()
-                log_perfomance(t1_start,t1_stop,1,ai_move,0)
+                log_perfomance(t1_start,t1_stop,1,ai_move,0,player1,player2)
 
             elif not player_two and not game_state.red_to_move: #Black
                 t2_start = process_time()
@@ -153,7 +160,7 @@ def main(player1,player2,depth_p1,depth_p2):
                     move_made = True
                     animate = True
                 t2_stop=process_time()
-                log_perfomance(t2_start,t2_stop,2,ai_move,0)
+                log_perfomance(t2_start,t2_stop,2,ai_move,0,player1,player2)
 
 
         if move_made:
@@ -173,9 +180,10 @@ def main(player1,player2,depth_p1,depth_p2):
             game_over = True
             if game_state.red_to_move:
                 drawEndGameText(screen, "Black wins")
+                player_won=2
             else:
                 drawEndGameText(screen, "Red wins")
-
+                player_won=1
         clock.tick(MAX_FPS)
         p.display.flip()
 
@@ -313,22 +321,36 @@ def animateMove(move, screen, board, clock):
         p.display.flip()
         clock.tick(60)
 
-def log_perfomance(t_start,t_stop,player,move,gameover):
+def log_perfomance(t_start,t_stop,player,move,gameover,depth_p1=4,depth_p2=4,player_won=0):
     global Total_time_p1
     global Total_time_p2
     global Total_move_p1
     global Total_move_p2
 
-    delta_t=0
+    delta_t = 0
     delta_t = t_stop - t_start
-    if player == 1:
+
+    if gameover == 1:
+        if player_won == 2:
+            print("BLACK WINS")
+        elif player_won == 1:
+            print("RED WINS")
+        else:
+            print("DRAW!")
+
+        if Total_time_p1 > 0:
+            print(f"Red AI1 with depth:{depth_p1}    | Total time:{Total_time_p1:.3f} | Avg thinking time:{Total_time_p1/Total_move_p1:.3f} ")
+        if Total_time_p2 > 0:
+            print(f"Black AI2 with depth:{depth_p2}  | Total time:{Total_time_p2:.3f} | Avg thinking time:{Total_time_p2/Total_move_p2:.3f}")
+
+    elif player == 1:
         Total_time_p1 += delta_t
         Total_move_p1 += 1
-        print(f"AI1: {move}, Thinking Time:{delta_t} , Total time:{Total_time_p1}, Move:{Total_move_p1}")
+        print(f"Red AI1: {move}, Thinking Time:{delta_t} , Total time:{Total_time_p1}, Move:{Total_move_p1}")
     elif player == 2:
         Total_time_p2 += delta_t
         Total_move_p2 += 1
-        print(f"AI2: {move}, Thinking Time:{delta_t} , Total time:{Total_time_p2}, Move:{Total_move_p2}")
+        print(f"Black AI2: {move}, Thinking Time:{delta_t} , Total time:{Total_time_p2}, Move:{Total_move_p2}")
 
 
 def start_page():
@@ -423,8 +445,7 @@ def levelgame(mode):
 if __name__ == "__main__":
     player1,player2,mode = start_page()
     print("Loading... ")
-
     depth_p1,depth_p2 = levelgame(mode)
+
     print("Initialing game...")
-    print(depth_p1,depth_p2)
     main(player1,player2,depth_p1,depth_p2)
