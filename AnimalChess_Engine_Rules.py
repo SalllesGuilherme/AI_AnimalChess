@@ -10,6 +10,7 @@ Students: Danilo Brandão / Guilherme Salles
 Storing all the information about the current state of chess game.
 Determining valid moves at current state.
 """
+from copy import deepcopy
 
 class GameState:
     def __init__(self):
@@ -19,27 +20,27 @@ class GameState:
         The second character represents the type of the piece: 'M', 'L', 'T', 'E', 'O', 'D','T','L.
         "--" represents an empty space with no piece.
         """
-        self.board = [
-            ["bL", "--", "--", "--", "--", "--", "bT"],
-            ["--", "bD", "--", "--", "--", "bC", "--"],
-            ["bM", "--", "bO", "--", "bW", "--", "bE"],
-            ["--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--"],
-            ["rE", "--", "rW", "--", "rO", "--", "rM"],
-            ["--", "rC", "--", "--", "--", "rD", "--"],
-            ["rT", "--", "--", "--", "--", "--", "rL"]]
-
         # self.board = [
-        #     ["--", "--", "--", "--", "--", "--", "--"],
-        #     ["--", "--", "--", "--", "--", "--", "--"],
-        #     ["--", "--", "--", "--", "--", "--", "rL"],
-        #     ["--", "--", "--", "--", "--", "--", "--"],
-        #     ["--", "--", "--", "bT", "--", "--", "--"],
+        #     ["bL", "--", "--", "--", "--", "--", "bT"],
+        #     ["--", "bD", "--", "--", "--", "bC", "--"],
+        #     ["bM", "--", "bO", "--", "bW", "--", "bE"],
         #     ["--", "--", "--", "--", "--", "--", "--"],
         #     ["--", "--", "--", "--", "--", "--", "--"],
         #     ["--", "--", "--", "--", "--", "--", "--"],
-        #     ["--", "--", "--", "--", "--", "--", "--"]]
+        #     ["rE", "--", "rW", "--", "rO", "--", "rM"],
+        #     ["--", "rC", "--", "--", "--", "rD", "--"],
+        #     ["rT", "--", "--", "--", "--", "--", "rL"]]
+
+        self.board = [
+            ["--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "rL", "--"],
+            ["--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "bT", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--"]]
 
         # self.board = [
         #     ["bD", "--", "--", "--", "--", "--", "--"],
@@ -65,6 +66,7 @@ class GameState:
         self.black_trap_locations = [(1,3), (0,2), (0, 4)]
         self.den_invaded = False
         self.draw = False
+        #self.isTerminal = False
 
 
     def makeMove(self, move):
@@ -73,6 +75,7 @@ class GameState:
         self.board[move.end_row][move.end_col] = move.piece_moved
         self.move_log.append(move)  # log the move so we can undo it later
         self.red_to_move = not self.red_to_move  # switch players
+
 
     def undoMove(self):
 
@@ -84,7 +87,29 @@ class GameState:
             self.den_invaded = False
             self.draw = False
 
+    ### Simulate move on MTSC
+    def takeAction(self, move):
+        newState = deepcopy(self)
+        newState.board[move.start_row][move.start_col] = "--"
+        newState.board[move.end_row][move.end_col] = move.piece_moved
+        newState.red_to_move = not self.red_to_move  # switch players
+        return newState
 
+    def getReward(self):
+        if self.board[0][3][0] == "r" or self.board[8][3][0] == "b":
+            return True
+        else:
+            return False
+
+    def isTerminal(self):
+        if self.board[0][3][0] == "r" or self.board[8][3][0] == "b":
+            return True
+        else:
+            return False
+
+    def getCurrentPlayer(self):
+        return self.red_to_move
+    ###
 
     def getValidMoves(self):
         """
@@ -94,7 +119,7 @@ class GameState:
         moves = self.getAllPossibleMoves()
 
         if len(moves) == 0:
-            print("moves?")
+            print("No moves?")
         else:
             self.den_invaded = False
             self.draw = False
@@ -149,6 +174,7 @@ class GameState:
     def enemyConquerDen(self):
         if self.board[0][3][0] == "r" or self.board[8][3][0] == "b":
             self.den_invaded = True
+            #self.isTerminal = True
             return True
         else:
             return False
@@ -288,7 +314,7 @@ class Move:
     rows_to_ranks = {v: k for k, v in ranks_to_rows.items()}
     cols_to_files = {v: k for k, v in files_to_cols.items()}
 
-    def __init__(self, start_square, end_square, board, is_enpassant_move=False, is_castle_move=False):
+    def __init__(self, start_square, end_square, board):
         self.start_row = start_square[0]
         self.start_col = start_square[1]
         self.end_row = end_square[0]
@@ -306,6 +332,10 @@ class Move:
         if isinstance(other, Move):
             return self.moveID == other.moveID
         return False
+
+    ##HASH for moves on mcst
+    def __hash__(self):
+        return hash((self.getChessNotation()))
 
     def getChessNotation(self):
 

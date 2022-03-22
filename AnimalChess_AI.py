@@ -124,6 +124,7 @@ global DEPTH #=4
 def findRandomMove(valid_moves):
     return valid_moves[random.randint(0,len(valid_moves)-1)]
 
+
 def find_GreadyMove(game_state, valid_moves):
     turnMultiplier = 1 if game_state.white_to_move else -1
     maxScore = -DEN_CONQUESTED
@@ -132,7 +133,6 @@ def find_GreadyMove(game_state, valid_moves):
     for playerMove in valid_moves:
         game_state.makeMove(playerMove)
         score = turnMultiplier * scoreMaterial(game_state)
-
         if score > maxScore:
             maxScore = score
             bestMove = playerMove
@@ -264,5 +264,17 @@ def orderby_GreadyMove(game_state, valid_moves):
         game_state.undoMove()
     return de
 
+'''
+Monte Carlo algorithm
+'''
+import AnimalChess_AI_mcst
 
+def find_BestMove_mcst(game_state, valid_moves):
+    global mcst_move
+    mcst_move = None
 
+    searcher = AnimalChess_AI_mcst.mcts(timeLimit=1000000)
+    action = searcher.search(initialState=game_state)
+    mcst_move=action
+    print(f"mcts: {mcst_move}")
+    return mcst_move

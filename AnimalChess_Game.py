@@ -109,6 +109,11 @@ def main(player1,player2,depth_p1,depth_p2):
                     ai_move = AnimalChess_AI.find_BestMove(game_state, valid_moves,depth_p1)
                     print(ai_move)
 
+                if e.key == p.K_m:
+                        print("JucAI MCTS recomends move:")
+                        ai_move = AnimalChess_AI.find_BestMove_mcst(game_state, valid_moves)
+                        print(ai_move)
+
                 if e.key == p.K_q:
                     print("\nEND GAME statistics:")
                     log_perfomance(process_time(), process_time(), 0,0 , 1,depth_p1,depth_p2,player_won)
