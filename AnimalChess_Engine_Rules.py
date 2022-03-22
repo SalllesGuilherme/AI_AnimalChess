@@ -102,13 +102,17 @@ class GameState:
             return False
 
     def isTerminal(self):
+        moves = []
+        moves = self.getAllPossibleMoves()
         if self.board[0][3][0] == "r" or self.board[8][3][0] == "b":
+            return True
+        elif len(moves) == 0:
             return True
         else:
             return False
 
     def getCurrentPlayer(self):
-        return self.red_to_move
+        return (2 -self.red_to_move)
     ###
 
     def getValidMoves(self):

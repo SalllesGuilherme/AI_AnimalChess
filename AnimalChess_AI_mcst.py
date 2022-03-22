@@ -76,12 +76,10 @@ class mcts():
         """
             execute a selection-expansion-simulation-backpropagation round
         """
-        print(f"root: {self.root}")
-
+        #print(f"root: {self.root}")
         node = self.selectNode(self.root)
-
-        print(f"node: {node}")
-        print(f"Terminal: {self.root.state.isTerminal()}")
+        #print(f"node: {node}")
+        #print(f"Terminal: {self.root.state.isTerminal()}")
 
         reward = self.rollout(node.state) #node.state
         self.backpropogate(node, reward)
@@ -98,18 +96,29 @@ class mcts():
 
         actions = node.state.getValidMoves()         ##node.state.getPossibleActions()
         for action in actions:
-            print(action)
+            #print(action)
 
             if action not in node.children:#.values(): ### keys? . values??
-                print('Expasion...')
+                #print('Expasion...')
                 newNode = treeNode(node.state.takeAction(action),node)  ###treeNode(node.state.takeAction(action), node)
                 node.children[action] = newNode
                 if len(actions) == len(node.children):
                     node.isFullyExpanded = True
-                print(newNode,node.children,newNode.state)
+                #print(newNode,node.children,newNode.state)
                 return newNode
 
         raise Exception("Should never reach here")
+
+    def rollout(self):
+        current_rollout_state = self.state
+
+        while not current_rollout_state.isTerminal():
+            possible_moves = current_rollout_state.getValidMoves()
+
+            action = self.rollout_policy(possible_moves)
+            current_rollout_state = current_rollout_state.takeAction(action)
+        return current_rollout_state
+
 
     def backpropogate(self, node, reward):
         while node is not None:

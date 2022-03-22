@@ -153,7 +153,8 @@ def main(player1,player2,depth_p1,depth_p2):
             elif not player_two and not game_state.red_to_move: #Black
                 t2_start = process_time()
                 ai_move = []
-                ai_move = AnimalChess_AI.find_BestMove(game_state, valid_moves,depth_p2)
+                #ai_move = AnimalChess_AI.find_BestMove(game_state, valid_moves,depth_p2)
+                ai_move = AnimalChess_AI.find_BestMove_mcst(game_state, valid_moves)
                 if ai_move is not None:
                     game_state.makeMove(ai_move)
                     move_made = True

@@ -273,8 +273,8 @@ def find_BestMove_mcst(game_state, valid_moves):
     global mcst_move
     mcst_move = None
 
-    searcher = AnimalChess_AI_mcst.mcts(timeLimit=1000000)
+    searcher = AnimalChess_AI_mcst.mcts(timeLimit=2000)
     action = searcher.search(initialState=game_state)
     mcst_move=action
-    print(f"mcts: {mcst_move}")
+
     return mcst_move
