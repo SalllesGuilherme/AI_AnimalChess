@@ -11,6 +11,7 @@ JUNGLE CHESS
 Main code for run the game, it handle user input and GUI
 """
 
+from json import load
 import pygame as p
 import AnimalChess_Engine_Rules,AnimalChess_AI
 import sys
@@ -327,6 +328,164 @@ def animateMove(move, screen, board, clock):
         p.display.flip()
         clock.tick(60)
 
+# class Button():
+# 	def __init__(self, x, y, image, scale):
+# 		width = image.get_width()
+# 		height = image.get_height()
+# 		self.image = p.transform.scale(image, (int(width * scale), int(height * scale)))
+# 		self.rect = self.image.get_rect()
+# 		self.rect.topleft = (x, y)
+# 		self.clicked = False
+
+# 	def draw(self, surface):
+# 		action = False
+# 		#get mouse position
+# 		pos = p.mouse.get_pos()
+
+# 		#check mouseover and clicked conditions
+# 		if self.rect.collidepoint(pos):
+# 			if p.mouse.get_pressed()[0] == 1 and self.clicked == False:
+# 				self.clicked = True
+# 				action = True
+
+# 		if p.mouse.get_pressed()[0] == 0:
+# 			self.clicked = False
+
+# 		#draw button on screen
+# 		surface.blit(self.image, (self.rect.x, self.rect.y))
+
+# 		return action
+
+class Button:
+    def __init__(self, image, position, callback=None):
+        self.image = image
+        self.rect = image.get_rect(topleft=position)
+        self.callback = callback
+ 
+    def on_click(self, event):
+        if event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                self.callback(self)
+        
+# def game_mode(gamemode):
+#     global p1, p2
+#     if gamemode == 1:
+#         p1, p2 = True, True
+#     elif gamemode == 2:
+#         p1, p2 = True, False
+#     elif gamemode == 3:
+#         p1, p2 = False, True
+#     elif gamemode == 4:
+#         p1, p2 = False, False
+#     else:
+#         raise TypeError("Only integers from 1 to 4 are allowed") 
+#     print(p1,p2)
+#     print(type(p1))
+#     print(type(p2))
+#     return p1, p2
+        
+def main_menu():
+    
+    mainClock = p.time.Clock()
+    
+    #create display window
+    SCREEN_WIDTH = 800
+    SCREEN_HEIGHT = 600
+
+    # load main screen
+    screen = p.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    p.display.set_caption("Jungle Chess by Danilo Brandao and Guilherme Salles")
+    bg_img = p.image.load("images/main_menu.gif")
+    screen.blit(bg_img,(0,0))
+    
+    # load button images
+    hvh_img = p.image.load('images/button_hvh.png').convert_alpha()
+    hva_img = p.image.load('images/button_hva.png').convert_alpha()
+    avh_img = p.image.load('images/button_avh.png').convert_alpha()
+    ava_img = p.image.load('images/button_ava.png').convert_alpha()
+    
+    # #create button instances
+    # button_1 = Button(hvh_img, (250, 350), game_mode(1))
+    # button_2 = Button(hva_img, (250, 400), game_mode(2))
+    # button_3 = Button(avh_img, (250, 450), game_mode(3))
+    # button_4 = Button(ava_img, (250, 500), game_mode(4))
+    button_1 = Button(hvh_img, (250, 350))
+    button_2 = Button(hva_img, (250, 400))
+    button_3 = Button(avh_img, (250, 450))
+    button_4 = Button(ava_img, (250, 500))
+   
+    # game music
+    p.mixer.init()
+    music = p.mixer.Sound('assets/theme_song.mp3')
+    music.set_volume(0.65)
+    music.play()
+           
+    # p.display.flip()
+
+    p1, p2 = False, False
+
+    run = True
+    while run:
+        
+        screen.blit(button_1.image, button_1.rect)
+        screen.blit(button_2.image, button_2.rect)
+        screen.blit(button_3.image, button_3.rect)
+        screen.blit(button_4.image, button_4.rect)
+        # p.display.flip()
+        # if button_1.draw(screen):
+        #     p1, p2 = True, True
+        #     run = False
+      
+        # if button_2.draw(screen):
+        #     p1, p2 = True, False
+        #     print("button 2!")
+        #     run = False
+            
+        # if button_3.draw(screen):
+        #     p1, p2 = False, True
+        #     print("button 3!")
+        #     run = False
+            
+        # if button_4.draw(screen):
+        #     p1, p2 = False, False
+        #     print("button 4!")
+        #     run = False
+    
+        for event in p.event.get():
+            if event.type == p.QUIT:
+                p.quit()
+                sys.exit()
+            if event.type == p.KEYDOWN:
+                if event.key == p.K_ESCAPE:
+                    p.quit()
+                    sys.exit()
+            if event.type == p.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if button_1.rect.collidepoint(p.mouse.get_pos()):
+                        # print("Over button 1!")
+                        p1, p2 = True, True
+                        run = False
+                    if button_2.rect.collidepoint(p.mouse.get_pos()):
+                        # print("Over button 2!")
+                        p1, p2 = True, False
+                        run = False
+                    if button_3.rect.collidepoint(p.mouse.get_pos()):
+                        # print("Over button 3!")
+                        p1, p2 = False, True
+                        run = False
+                    if button_4.rect.collidepoint(p.mouse.get_pos()):
+                        # print("Over button 4!")
+                        p1, p2 = False, False
+                        run = False
+        
+        p.display.update()
+        
+    music.stop()
+    mainClock.tick(60)
+    return p1, p2
+        #run = False
+
+
 def start_page():
 
     junglechess ='''
@@ -380,6 +539,8 @@ Please type one of the numbers below for choose a mode for play:
     return p1,p2
 
 if __name__ == "__main__":
-    player1,player2 = start_page()
+    click = False  # Resets click event
+    player1,player2 = main_menu()  # Loads main menu
+    # player1,player2 = start_page()
     print("Loading... ")
     main(player1,player2)

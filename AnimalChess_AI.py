@@ -191,6 +191,7 @@ def findBestMove_AlphaBeta(game_state, valid_moves):
 
     return next_move
 
+"""
 import numpy as np
 from collections import defaultdict
 
@@ -339,20 +340,224 @@ def main(initial_state):
 
 
 
+# class MCTS:
+   
+#    def __init__(self, gamestate):
+#        self.state = gamestate
+#        self.board = gamestate.board
+       
+   
+#    def getAvailablePieces(self):
+#         player = "r" if self.state.white_to_move else "b"
+#         available_pieces = []
+#         for row in self.board:
+#             for piece in row:
+#                 if piece[0] == player:
+#                     available_pieces.append(piece)
+#         return available_pieces
+
 """
+
+# qwpo IMPLEMENTATION
+
+"""
+A minimal implementation of Monte Carlo tree search (MCTS) in Python 3
+Luke Harold Miles, July 2019, Public Domain Dedication
+See also https://en.wikipedia.org/wiki/Monte_Carlo_tree_search
+https://gist.github.com/qpwo/c538c6f73727e254fdc7fab81024f6e1
+"""
+from abc import ABC, abstractmethod
+from collections import defaultdict
+import math
+
+
 class MCTS:
+    "Monte Carlo tree searcher. First rollout the tree then choose a move."
+
+    def __init__(self, exploration_weight=1):
+        self.Q = defaultdict(int)  # total reward of each node
+        self.N = defaultdict(int)  # total visit count for each node
+        self.children = dict()  # children of each node
+        self.exploration_weight = exploration_weight
+
+    def choose(self, node):
+        "Choose the best successor of node. (Choose a move in the game)"
+        if node.is_terminal():
+            raise RuntimeError(f"choose called on terminal node {node}")
+
+        if node not in self.children:
+            return node.find_random_child()
+
+        def score(n):
+            if self.N[n] == 0:
+                return float("-inf")  # avoid unseen moves
+            return self.Q[n] / self.N[n]  # average reward
+
+        return max(self.children[node], key=score)
+
+    def do_rollout(self, node):
+        "Make the tree one layer better. (Train for one iteration.)"
+        path = self._select(node)
+        leaf = path[-1]
+        self._expand(leaf)
+        reward = self._simulate(leaf)
+        self._backpropagate(path, reward)
+
+    def _select(self, node):
+        "Find an unexplored descendent of `node`"
+        path = []
+        while True:
+            path.append(node)
+            if node not in self.children or not self.children[node]:
+                # node is either unexplored or terminal
+                return path
+            unexplored = self.children[node] - self.children.keys()
+            if unexplored:
+                n = unexplored.pop()
+                path.append(n)
+                return path
+            node = self._uct_select(node)  # descend a layer deeper
+
+    def _expand(self, node):
+        "Update the `children` dict with the children of `node`"
+        if node in self.children:
+            return  # already expanded
+        self.children[node] = node.find_children()
+
+    def _simulate(self, node):
+        "Returns the reward for a random simulation (to completion) of `node`"
+        invert_reward = True
+        while True:
+            if node.is_terminal():
+                reward = node.reward()
+                return 1 - reward if invert_reward else reward
+            node = node.find_random_child()
+            invert_reward = not invert_reward
+
+    def _backpropagate(self, path, reward):
+        "Send the reward back up to the ancestors of the leaf"
+        for node in reversed(path):
+            self.N[node] += 1
+            self.Q[node] += reward
+            reward = 1 - reward  # 1 for me is 0 for my enemy, and vice versa
+
+    def _uct_select(self, node):
+        "Select a child of node, balancing exploration & exploitation"
+
+        # All children of node should already be expanded:
+        assert all(n in self.children for n in self.children[node])
+
+        log_N_vertex = math.log(self.N[node])
+
+        def uct(n):
+            "Upper confidence bound for trees"
+            return self.Q[n] / self.N[n] + self.exploration_weight * math.sqrt(
+                log_N_vertex / self.N[n]
+            )
+
+        return max(self.children[node], key=uct)
+
+
+class Node(ABC):
+    """
+    A representation of a single board state.
+    MCTS works by constructing a tree of these Nodes.
+    Could be e.g. a chess or checkers board state.
+    """
+
+    @abstractmethod
+    def find_children(self):
+        "All possible successors of this board state"
+        return set()
+
+    @abstractmethod
+    def find_random_child(self):
+        "Random successor of this board state (for more efficient simulation)"
+        return None
+
+    @abstractmethod
+    def is_terminal(self):
+        "Returns True if the node has no children"
+        return True
+
+    @abstractmethod
+    def reward(self):
+        "Assumes `self` is terminal node. 1=win, 0=loss, .5=tie, etc"
+        return 0
+
+    @abstractmethod
+    def __hash__(self):
+        "Nodes must be hashable"
+        return 123456789
+
+    @abstractmethod
+    def __eq__(node1, node2):
+        "Nodes must be comparable"
+        return True
     
-    def __init__(self, gamestate):
-        self.state = gamestate
-        self.board = gamestate.board
+from collections import namedtuple
+from random import choice
+
+_ACB = namedtuple("AnimalChessBoard", "tup turn winner terminal")
+
+# Inheriting from a namedtuple is convenient because it makes the class
+# immutable and predefines __init__, __repr__, __hash__, __eq__, and others
+class AnimalChessBoard(_ACB, Node):
+    def find_children(board):
+        if board.terminal:  # If the game is finished then no moves can be made
+            return set()
+        # Otherwise, you can make a move in each of the empty spots
+        return {
+            board.make_move(i) for i, value in enumerate(board.tup) if value is None
+        }
         
+class MCTS_move_finder:
+    def __init__(self, gamestate):
+       self.state = gamestate
+       self.board = gamestate.board
+       self.valid_moves = gamestate.getValidMoves()
+       
+    def find_children(self):
+        current_state = self.state
+        if current_state.den_invaded:  # If the game is finished then no moves can be made
+            return set()
+        # Otherwise, you can make a move in each of the empty spots
+        return {
+            current_state.makeMove(i) for i, value in enumerate(self.valid_moves) if value is None
+        }
+        
+    def find_random_child(self):
+        if self.state.den_invaded:
+            return None  # If the game is finished then no moves can be made
+        return self.state.makeMove(choice(self.valid_moves))
     
-    def getAvailablePieces(self):
-        player = "r" if self.state.white_to_move else "b"
-        available_pieces = []
-        for row in self.board:
-            for piece in row:
-                if piece[0] == player:
-                    available_pieces.append(piece)
-        return available_pieces
-"""
+    def reward(self):
+        '''
+        Returns 1 or 0 or -1 depending on current state corresponding to win, tie or a loss.
+        '''
+        if self.state.white_to_move:
+            if self.board[0][3][0] == "r":
+                return 1
+            elif self.board.den_invaded:
+                return -1
+            else:
+                return 0
+        if not self.state.white_to_move:
+            if self.board[8][3][0] == "b":
+                return 1
+            elif self.board.den_invaded:
+                return -1
+            else:
+                return 0
+            
+    def is_terminal(self):
+        return self.state.den_invaded
+    
+    def find_best_move(self):
+        tree = MCTS()
+        for _ in range(50):
+            tree.do_rollout(self.board)
+        return tree.choose(self.board)
+
+        
+        
