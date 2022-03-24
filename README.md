@@ -1,4 +1,4 @@
-# AI_AnimalChess
+# Artificial Intelligence - Jungle Chess
 A project developed with the goal of designed a AI based on Algorithm Minimax with Alpha-Beta Cuts for the Game Animal Chess
 
 
