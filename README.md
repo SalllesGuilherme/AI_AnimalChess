@@ -19,6 +19,7 @@ $pip install deepcopy
 ##3.For Run:
 '''
 $ git clone https://github.com/SalllesGuilherme/AI_AnimalChess.git
+'''
 
 ####To Play:
 ![Screen Shot 2022-03-24 at 13 40 55](https://user-images.githubusercontent.com/26006941/159928981-301e15d3-0d99-4202-b9bd-112f8c3e48d4.png)
