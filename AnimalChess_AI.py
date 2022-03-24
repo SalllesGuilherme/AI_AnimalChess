@@ -15,7 +15,7 @@ import random
 from math import inf
 import collections
 
-piece_score = {"E": 120, "M": 100, "L": 120, "T": 100, "O": 80, "W": 60,"D": 70,"C": 50}
+piece_score = {"E": 120, "M": 100, "L": 120, "T": 110, "O": 80, "W": 60,"D": 70,"C": 50}
 
 mouse_score = [[11, 25, 50, 100000, 50, 25, 13],
                 [11, 20, 25, 50, 25, 20, 13],
@@ -77,8 +77,8 @@ tiger_score = [[20, 40, 150, 100000, 150, 40, 20],
                 [12, 12, 12, 12, 12, 12, 12],
                 [5, 12, 12, 0, 12, 12, 5]]
 
-lion_score = [[20, 40, 150, 100000, 150, 40, 20],
-                [20, 25, 40, 150, 40, 25, 20],
+lion_score = [[20, 40, 50, 100000, 50, 40, 20],
+                [20, 25, 40, 50, 40, 25, 20],
                 [18, 30, 30, 20, 30, 30, 18],
                 [15, 0, 0, 15,0, 0, 15],
                 [12, 0, 0, 15, 0, 0, 12],
@@ -87,8 +87,8 @@ lion_score = [[20, 40, 150, 100000, 150, 40, 20],
                 [12, 12, 12, 12, 12, 12, 12],
                 [5, 12, 12, 0, 12, 12, 5]]
 
-elephant_score = [[20, 40, 150, 100000, 150, 40, 20],
-                [20, 25, 40, 150, 40, 25, 20],
+elephant_score = [[20, 40, 50, 100000, 50, 40, 20],
+                [20, 25, 40, 50, 40, 25, 20],
                 [18, 30, 30, 20, 30, 30, 18],
                 [15, 0, 0, 15,0, 0, 15],
                 [12, 0, 0, 15, 0, 0, 12],
@@ -164,7 +164,6 @@ def scoreMaterial(game_state):
 def findMove_NegaMaxAlphaBeta(game_state, valid_moves, depth,DEPTH, alpha, beta, turn_multiplier):
     global next_move
     if depth == 0:
-        #print(f"{turn_multiplier} move:{next_move}, depth:{depth},score:{turn_multiplier * scoreMaterial(game_state)},A B:{alpha,beta}")
         return turn_multiplier * scoreMaterial(game_state)
 
     max_score = -inf
@@ -177,7 +176,7 @@ def findMove_NegaMaxAlphaBeta(game_state, valid_moves, depth,DEPTH, alpha, beta,
             max_score = score
             if depth == DEPTH:
                 next_move = move
-                #print("Move found")
+
         game_state.undoMove()
         if max_score > alpha:
              alpha = max_score
