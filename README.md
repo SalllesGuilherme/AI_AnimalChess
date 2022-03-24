@@ -6,8 +6,8 @@ A project developed with the goal of designed a AI based on Algorithm Minimax wi
 ## 1.How To Play
 To win the game, one player must successfully move any animal into the Den of the opponent. See rules:
 
-http://ancientchess.com/page/play-doushouqi.htm
-https://en.wikipedia.org/wiki/Jungle_(board_game).
+- http://ancientchess.com/page/play-doushouqi.htm
+- https://en.wikipedia.org/wiki/Jungle_(board_game).
 
 ## 2.Pre-requisite:
 It's required to install few libraries first.
