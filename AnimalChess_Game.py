@@ -210,7 +210,7 @@ def drawBoard(screen):
         for column in range(DIMENSION_COL):
             p.draw.rect(screen, p.Color(25,65,25), p.Rect(column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
             #screen.blit(IMAGES['grass'], p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE -3, SQUARE_SIZE - 3))  # grass image
-            p.draw.rect(screen, p.Color(200,225,200), p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3, SQUARE_SIZE - 3))
+            p.draw.rect(screen, p.Color(90,150,75), p.Rect((column * SQUARE_SIZE) + 3, (row * SQUARE_SIZE) + 3, SQUARE_SIZE - 3, SQUARE_SIZE - 3))
 
             if row in [3,4,5]:  #WATER
                 if column in [1,2,4,5]:
@@ -481,20 +481,16 @@ def main_menu():
     ava_img = p.image.load('images/button_ava.png').convert_alpha()
 
     # #create button instances
-    # button_1 = Button(hvh_img, (250, 350), game_mode(1))
-    # button_2 = Button(hva_img, (250, 400), game_mode(2))
-    # button_3 = Button(avh_img, (250, 450), game_mode(3))
-    # button_4 = Button(ava_img, (250, 500), game_mode(4))
     button_1 = Button(hvh_img, (250, 350))
     button_2 = Button(hva_img, (250, 400))
     button_3 = Button(avh_img, (250, 450))
     button_4 = Button(ava_img, (250, 500))
 
     # game music
-    p.mixer.init()
-    music = p.mixer.Sound('assets/theme_song.mp3')
-    music.set_volume(0.65)
-    music.play()
+    # p.mixer.init()
+    # music = p.mixer.Sound('assets/theme_song.mp3')
+    # music.set_volume(0.65)
+    # music.play()
 
     # p.display.flip()
 
@@ -507,25 +503,7 @@ def main_menu():
         screen.blit(button_2.image, button_2.rect)
         screen.blit(button_3.image, button_3.rect)
         screen.blit(button_4.image, button_4.rect)
-        # p.display.flip()
-        # if button_1.draw(screen):
-        #     p1, p2 = True, True
-        #     run = False
 
-        # if button_2.draw(screen):
-        #     p1, p2 = True, False
-        #     print("button 2!")
-        #     run = False
-
-        # if button_3.draw(screen):
-        #     p1, p2 = False, True
-        #     print("button 3!")
-        #     run = False
-
-        # if button_4.draw(screen):
-        #     p1, p2 = False, False
-        #     print("button 4!")
-        #     run = False
         mode=0
         for event in p.event.get():
             if event.type == p.QUIT:
@@ -560,11 +538,12 @@ def main_menu():
 
         p.display.update()
 
-    music.stop()
+    #music.stop()
     mainClock.tick(60)
     return p1, p2,mode
 
 if __name__ == "__main__":
+
     #Old Interface
     #player1,player2,mode = start_page()
 
