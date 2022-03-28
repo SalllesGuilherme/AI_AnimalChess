@@ -459,9 +459,61 @@ class Button:
         if event.button == 1:
             if self.rect.collidepoint(event.pos):
                 self.callback(self)
+    
 
+class DropDown():
+
+    def __init__(self, color_menu, color_option, x, y, w, h, font, main, options):
+        self.color_menu = color_menu
+        self.color_option = color_option
+        self.rect = p.Rect(x, y, w, h)
+        self.font = font
+        self.main = main
+        self.options = options
+        self.draw_menu = False
+        self.menu_active = False
+        self.active_option = -1
+
+    def draw(self, surf):
+        p.draw.rect(surf, self.color_menu[self.menu_active], self.rect, 0)
+        msg = self.font.render(self.main, 1, (0, 0, 0))
+        surf.blit(msg, msg.get_rect(center = self.rect.center))
+
+        if self.draw_menu:
+            for i, text in enumerate(self.options):
+                rect = self.rect.copy()
+                rect.y += (i+1) * self.rect.height
+                p.draw.rect(surf, self.color_option[1 if i == self.active_option else 0], rect, 0)
+                msg = self.font.render(text, 1, (0, 0, 0))
+                surf.blit(msg, msg.get_rect(center = rect.center))
+
+    def update(self, event_list):
+        mpos = p.mouse.get_pos()
+        self.menu_active = self.rect.collidepoint(mpos)
+        
+        self.active_option = -1
+        for i in range(len(self.options)):
+            rect = self.rect.copy()
+            rect.y += (i+1) * self.rect.height
+            if rect.collidepoint(mpos):
+                self.active_option = i
+                break
+
+        if not self.menu_active and self.active_option == -1:
+            self.draw_menu = False
+
+        for event in event_list:
+            if event.type == p.MOUSEBUTTONDOWN and event.button == 1:
+                if self.menu_active:
+                    self.draw_menu = not self.draw_menu
+                elif self.draw_menu and self.active_option >= 0:
+                    self.draw_menu = False
+                    return self.active_option
+        return -1    
+       
 
 def main_menu():
+    p.init()
     mainClock = p.time.Clock()
 
     # create display window
@@ -472,19 +524,46 @@ def main_menu():
     screen = p.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     p.display.set_caption("Jungle Chess by Danilo Brandao and Guilherme Salles")
     bg_img = p.image.load("images/main_menu.gif")
-    screen.blit(bg_img, (0, 0))
+    
 
     # load button images
     hvh_img = p.image.load('images/button_hvh.png').convert_alpha()
     hva_img = p.image.load('images/button_hva.png').convert_alpha()
     avh_img = p.image.load('images/button_avh.png').convert_alpha()
     ava_img = p.image.load('images/button_ava.png').convert_alpha()
+    sel_1 = p.image.load('images/select_lvl_1.png').convert_alpha()
+    sel_2 = p.image.load('images/select_lvl_2.png').convert_alpha()
+    
 
     # #create button instances
     button_1 = Button(hvh_img, (250, 350))
     button_2 = Button(hva_img, (250, 400))
     button_3 = Button(avh_img, (250, 450))
     button_4 = Button(ava_img, (250, 500))
+    
+    difficulty_levels = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    # list1 = OptionBox(
+    # 75, 350, 100, 30, (150, 150, 150), (100, 200, 255), p.font.SysFont(None, 30), difficulty_levels)
+    
+    COLOR_INACTIVE = (255, 128, 0)
+    COLOR_ACTIVE = (255, 208, 0)
+    COLOR_LIST_INACTIVE = (0, 143, 90)
+    COLOR_LIST_ACTIVE = (3, 252, 140)
+
+    list1 = DropDown([COLOR_INACTIVE, COLOR_ACTIVE],
+                     [COLOR_LIST_INACTIVE, COLOR_LIST_ACTIVE],
+                     75, 350, 100, 20,
+                     p.font.SysFont("Courier", 20),
+                     "Click",
+                     difficulty_levels)
+    
+    list2 = DropDown([COLOR_INACTIVE, COLOR_ACTIVE],
+                     [COLOR_LIST_INACTIVE, COLOR_LIST_ACTIVE],
+                     650, 350, 100, 20,
+                     p.font.SysFont("Courier", 20),
+                     "Click",
+                     difficulty_levels)
+    
 
     # game music
     # p.mixer.init()
@@ -498,14 +577,24 @@ def main_menu():
 
     run = True
     while run:
-
-        screen.blit(button_1.image, button_1.rect)
-        screen.blit(button_2.image, button_2.rect)
-        screen.blit(button_3.image, button_3.rect)
-        screen.blit(button_4.image, button_4.rect)
-
+        mainClock.tick(60)
+               
+        # screen.blit(bg_img, (0, 0))
+        
         mode=0
-        for event in p.event.get():
+        event_list = p.event.get()
+        
+        selected_option_1 = list1.update(event_list)
+        if selected_option_1 >= 0:
+            list1.main = list1.options[selected_option_1]
+            print(list1.main)
+            
+        selected_option_2 = list2.update(event_list)
+        if selected_option_2 >= 0:
+            list2.main = list2.options[selected_option_2]
+            print(list2.main)
+        
+        for event in event_list:
             if event.type == p.QUIT:
                 p.quit()
                 sys.exit()
@@ -518,29 +607,75 @@ def main_menu():
                     if button_1.rect.collidepoint(p.mouse.get_pos()):
                         # print("Over button 1!")
                         p1, p2 = True, True
+                        depth1, depth2 = None, None
                         run = False
                         mode=1
                     if button_2.rect.collidepoint(p.mouse.get_pos()):
                         # print("Over button 2!")
                         p1, p2 = True, False
-                        run = False
-                        mode=2
+                        if list2.main == "Click":
+                            print("Please select a difficulty level for AI 2!")
+                        else:
+                            depth1, depth2 = None, int(list2.main)
+                            mode = 2
+                            run = False
+                            
+                        # run = False
+                        # mode=2
                     if button_3.rect.collidepoint(p.mouse.get_pos()):
                         # print("Over button 3!")
                         p1, p2 = False, True
-                        run = False
-                        mode=3
+                        if list1.main == "Click":
+                            print("Please select a difficulty level for AI 1!")
+                        else:
+                            depth1, depth2 = int(list1.main), None
+                            mode = 3
+                            run = False
+                        # run = False
+                        # mode=3
                     if button_4.rect.collidepoint(p.mouse.get_pos()):
                         # print("Over button 4!")
                         p1, p2 = False, False
-                        run = False
-                        mode=4
+                        if "Click" in (list1.main, list2.main):
+                            print("Please make sure you selected the difficulty level for both AI players!")
+                        else:
+                            depth1, depth2 = int(list1.main), int(list2.main)
+                            mode = 4
+                            run = False
+                            
+                        
+        
+            
+        # if mode == 2 and selected_option_2 == 0:
+        #     run = True
+        #     print("Please select a difficulty level for AI 2!")
+        # elif mode == 3 and selected_option_1 == 0:
+        #     run = True
+        #     print("Please select a difficulty level for AI 1!")
+        # elif mode == 4 and selected_option_1 == 0 or mode == 4 and selected_option_2 == 0:
+        #     run = True
+        #     print("Please make sure you selected the difficulty level for both AI players!")
+        # else:
+        #     run = False
 
-        p.display.update()
+        screen.blit(bg_img, (0, 0))  # Loads background image
+        screen.blit(sel_1, (50, 300))
+        screen.blit(sel_2, (625, 300))
+        screen.blit(button_1.image, button_1.rect)  # Loads button 1 on screen
+        screen.blit(button_2.image, button_2.rect)  # Loads button 2 on screen
+        screen.blit(button_3.image, button_3.rect)  # Loads button 3 on screen
+        screen.blit(button_4.image, button_4.rect)  # Loads button 4 on screen
+        list1.draw(screen)
+        list2.draw(screen)
+               
+        p.display.flip()           
+
+        #p.display.update()
 
     #music.stop()
     mainClock.tick(60)
-    return p1, p2,mode
+    # return p1, p2,mode
+    return p1, p2, depth1, depth2
 
 if __name__ == "__main__":
 
@@ -548,10 +683,12 @@ if __name__ == "__main__":
     #player1,player2,mode = start_page()
 
     click = False  # Resets click event
-    player1, player2,mode = main_menu()  # Loads main menu
+    # player1, player2,mode = main_menu()  # Loads main menu
+    player1, player2, depth_1, depth_2 = main_menu()  # Loads main menu
 
     print("Loading... ")
-    depth_p1,depth_p2 = levelgame(mode)
+    # depth_p1,depth_p2 = levelgame(mode)
 
     print("Initialing game...")
-    main(player1,player2,depth_p1,depth_p2)
+    # main(player1,player2,depth_p1,depth_p2)
+    main(player1, player2, depth_1, depth_2)
