@@ -152,7 +152,7 @@ def scoreMaterial(game_state):
                 piece_position_score = 0
                 piece_position_score = piece_position_scores[piece][row][col]
                 if piece_position_scores[piece][row][col] in last_moves:
-                    penalty_for_rep = 50
+                    penalty_for_rep = 70
                 if piece[0] == 'r':
                     score +=  piece_position_score + piece_score[piece[1]] - penalty_for_rep
 
@@ -230,7 +230,7 @@ def find_BestMove(game_state, valid_moves,depth_p):
     DEPTH= depth_p
     next_move = None
     global last_moves
-    last_moves = collections.deque(maxlen=8)
+    last_moves = collections.deque(maxlen=12)
 
     random.shuffle(valid_moves)
     ordered_valid_moves=orderby_GreadyMove(game_state, valid_moves)
@@ -253,13 +253,11 @@ def orderby_GreadyMove(game_state, valid_moves):
     for playerMove in valid_moves:
         game_state.makeMove(playerMove)
         score = turnMultiplier * scoreMaterial(game_state)
-
         if score > maxScore:
             maxScore = score
             de.appendleft(playerMove)
         else:
             de.append(playerMove)
-
         game_state.undoMove()
     return de
 

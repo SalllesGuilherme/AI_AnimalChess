@@ -1,4 +1,16 @@
 from __future__ import division
+"""
+FEUP - Faculty of Engineering of Porto
+MASTER OF DATA SCIENCE AND ENGINEERING
+Course: Artificial Inteligence
+Professor: Luis Reis
+Students: Danilo Brandão / Guilherme Salles
+"""
+
+'''
+Monte Carlo Implementation - Not working as expected, require further investigation
+'''
+
 
 import time
 import math
