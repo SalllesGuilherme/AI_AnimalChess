@@ -35,6 +35,7 @@ If a game mode againt the AI is select, also selecet the level of dificulty 1-9
 
 
 #### GAME:
-First version of our Jungle Chess
+GUI of the Jungle Chess
+<img width="453" alt="Screen Shot 2022-07-03 at 16 39 06" src="https://user-images.githubusercontent.com/26006941/177046964-c50e2556-5ff1-44e8-b586-4e6ec98ebaa4.png">
 
-![Screen Shot 2022-03-24 at 13 43 04](https://user-images.githubusercontent.com/26006941/159929371-f0d38c10-979a-4e93-8fb9-e33d1a3ce66f.png)
+
